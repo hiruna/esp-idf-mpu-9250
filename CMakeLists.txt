@@ -1,0 +1,6 @@
+idf_component_register(
+        SRCS "mpu9250.c"
+        INCLUDE_DIRS "." "include"
+        PRIV_INCLUDE_DIRS "interface"
+        REQUIRES "driver"
+)
