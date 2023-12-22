@@ -6,7 +6,7 @@
 #pragma once
 
 #include "driver_mpu9250.h"
-#include "driver/i2c.h"
+#include "driver/i2c_master.h"
 #include "esp_log.h"
 
 #ifdef __cplusplus
@@ -14,7 +14,8 @@ extern "C"{
 #endif
 
 
-esp_err_t mpu9250_set_i2c_config(i2c_config_t *cfg, i2c_port_t port);
+
+esp_err_t mpu9250_set_i2c_config(i2c_master_bus_config_t *master_cfg, i2c_device_config_t *dev_conf);
 
 
 
@@ -134,7 +135,7 @@ void mpu9250_interface_debug_print(const char *const fmt, ...);
  * @param[in] type is the irq type
  * @note      none
  */
-void mpu9250_interface_receive_callback(uint8_t type);
+void mpu9250_debug_receive_callback(uint8_t type);
 
 /**
  * @brief     interface dmp tap callback
@@ -142,14 +143,14 @@ void mpu9250_interface_receive_callback(uint8_t type);
  * @param[in] direction is the tap direction
  * @note      none
  */
-void mpu9250_interface_dmp_tap_callback(uint8_t count, uint8_t direction);
+void mpu9250_debug_dmp_tap_callback(uint8_t count, uint8_t direction);
 
 /**
  * @brief     interface dmp orient callback
  * @param[in] orientation is the dmp orientation
  * @note      none
  */
-void mpu9250_interface_dmp_orient_callback(uint8_t orientation);
+void mpu9250_debug_dmp_orient_callback(uint8_t orientation);
 
 /**
  * @}

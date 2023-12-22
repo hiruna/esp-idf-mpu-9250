@@ -8,12 +8,17 @@
 
 static const char *MPU9250_INTERFACE_TAG = "driver_mpu9250_interface";
 
-i2c_config_t *i2c_conf = NULL;
-i2c_port_t i2c_port;
+#define I2C_READ_TIMEOUT_MS 1000
+#define I2C_WRITE_TIMEOUT_MS 1000
 
-esp_err_t mpu9250_set_i2c_config(i2c_config_t *cfg, i2c_port_t port) {
-    i2c_conf = cfg;
-    i2c_port = port;
+i2c_master_bus_handle_t i2c_master_bus_hdl;
+i2c_master_dev_handle_t i2c_master_dev_hdl;
+i2c_master_bus_config_t *i2c_master_conf = NULL;
+i2c_device_config_t *i2c_dev_conf = NULL;
+
+esp_err_t mpu9250_set_i2c_config(i2c_master_bus_config_t *master_cfg, i2c_device_config_t *dev_conf) {
+    i2c_master_conf = master_cfg;
+    i2c_dev_conf = dev_conf;
     return ESP_OK;
 }
 
@@ -25,21 +30,18 @@ esp_err_t mpu9250_set_i2c_config(i2c_config_t *cfg, i2c_port_t port) {
  *         - 1 iic init failed
  * @note   none
  */
-uint8_t mpu9250_interface_iic_init(void)
-{
-    if(i2c_conf == NULL) {
-        ESP_LOGE(MPU9250_INTERFACE_TAG, "i2c_config is null!");
+uint8_t mpu9250_interface_iic_init(void) {
+    if (i2c_master_conf == NULL) {
+        ESP_LOGE(MPU9250_INTERFACE_TAG, "i2c_master_config is null!");
         return 1;
     }
 
     esp_err_t ret;
 
-    ret = i2c_param_config(i2c_port, i2c_conf);
+    ret = i2c_new_master_bus(i2c_master_conf, &i2c_master_bus_hdl);
     assert(ESP_OK == ret);
-    ret = i2c_driver_install(i2c_port, (*i2c_conf).mode, 0, 0, 0);
-    assert(ESP_OK == ret);
-
-    if(ret != ESP_OK) {
+    ret = i2c_master_bus_add_device(i2c_master_bus_hdl, i2c_dev_conf, &i2c_master_dev_hdl);
+    if (ret != ESP_OK) {
         return 1;
     }
 
@@ -53,13 +55,15 @@ uint8_t mpu9250_interface_iic_init(void)
  *         - 1 iic deinit failed
  * @note   none
  */
-uint8_t mpu9250_interface_iic_deinit(void)
-{
+uint8_t mpu9250_interface_iic_deinit(void) {
     esp_err_t ret;
-    ret = i2c_driver_delete(i2c_port);
+    ret = i2c_master_bus_rm_device(i2c_master_dev_hdl);
     assert(ESP_OK == ret);
-    i2c_conf = NULL;
-    if(ret != ESP_OK) {
+    ret = i2c_del_master_bus(i2c_master_bus_hdl);
+    assert(ESP_OK == ret);
+    i2c_master_conf = NULL;
+    i2c_dev_conf = NULL;
+    if (ret != ESP_OK) {
         return 1;
     }
     return 0;
@@ -76,29 +80,14 @@ uint8_t mpu9250_interface_iic_deinit(void)
  *             - 1 read failed
  * @note       none
  */
-uint8_t mpu9250_interface_iic_read(uint8_t addr, uint8_t reg, uint8_t *buf, uint16_t len)
-{
-    esp_err_t  ret;
+uint8_t mpu9250_interface_iic_read(uint8_t addr, uint8_t reg, uint8_t *buf, uint16_t len) {
+    esp_err_t ret;
 
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    ret = i2c_master_start(cmd);
+    ret = i2c_master_receive(i2c_master_dev_hdl, buf, len, I2C_READ_TIMEOUT_MS);
+    uint8_t wr_buf[] = {(0xD6 | I2C_MASTER_WRITE)};
+    i2c_master_transmit_receive(i2c_master_dev_hdl, wr_buf, sizeof(wr_buf), buf, len, -1);
     assert(ESP_OK == ret);
-    ret = i2c_master_write_byte(cmd, addr | I2C_MASTER_WRITE, true);
-    assert(ESP_OK == ret);
-    ret = i2c_master_write_byte(cmd, reg, true);
-    assert(ESP_OK == ret);
-    ret = i2c_master_start(cmd);
-    assert(ESP_OK == ret);
-    ret = i2c_master_write_byte(cmd, addr | I2C_MASTER_READ, true);
-    assert(ESP_OK == ret);
-    ret = i2c_master_read(cmd, buf, len, I2C_MASTER_LAST_NACK);
-    assert(ESP_OK == ret);
-    ret = i2c_master_stop(cmd);
-    assert(ESP_OK == ret);
-    ret = i2c_master_cmd_begin(i2c_port, cmd, 1000 / portTICK_PERIOD_MS);
-    i2c_cmd_link_delete(cmd);
-
-    if(ret != ESP_OK) {
+    if (ret != ESP_OK) {
         return 1;
     }
     return 0;
@@ -115,25 +104,15 @@ uint8_t mpu9250_interface_iic_read(uint8_t addr, uint8_t reg, uint8_t *buf, uint
  *            - 1 write failed
  * @note      none
  */
-uint8_t mpu9250_interface_iic_write(uint8_t addr, uint8_t reg, uint8_t *buf, uint16_t len)
-{
-    esp_err_t  ret;
+uint8_t mpu9250_interface_iic_write(uint8_t addr, uint8_t reg, uint8_t *buf, uint16_t len) {
+    esp_err_t ret;
 
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    ret = i2c_master_start(cmd);
+    ret = i2c_master_transmit(i2c_master_dev_hdl, buf, len, I2C_WRITE_TIMEOUT_MS);
     assert(ESP_OK == ret);
-    ret = i2c_master_write_byte(cmd, addr | I2C_MASTER_WRITE, true);
-    assert(ESP_OK == ret);
-    ret = i2c_master_write_byte(cmd, reg, true);
-    assert(ESP_OK == ret);
-    ret = i2c_master_write(cmd, buf, len, true);
-    assert(ESP_OK == ret);
-    ret = i2c_master_stop(cmd);
-    assert(ESP_OK == ret);
-    ret = i2c_master_cmd_begin(i2c_port, cmd, 1000 / portTICK_PERIOD_MS);
-    i2c_cmd_link_delete(cmd);
-
-    if(ret != ESP_OK) {
+    if (ret != ESP_OK) {
+        return 1;
+    }
+    if (ret != ESP_OK) {
         return 1;
     }
     return 0;
@@ -146,9 +125,10 @@ uint8_t mpu9250_interface_iic_write(uint8_t addr, uint8_t reg, uint8_t *buf, uin
  *         - 1 spi init failed
  * @note   none
  */
-uint8_t mpu9250_interface_spi_init(void)
-{
-    return 0;
+uint8_t mpu9250_interface_spi_init(void) {
+    ESP_LOGE(MPU9250_INTERFACE_TAG, "MPU9250 SPI functions not yet implemented!");
+    return 1;
+//    return 0;
 }
 
 /**
@@ -158,9 +138,10 @@ uint8_t mpu9250_interface_spi_init(void)
  *         - 1 spi deinit failed
  * @note   none
  */
-uint8_t mpu9250_interface_spi_deinit(void)
-{
-    return 0;
+uint8_t mpu9250_interface_spi_deinit(void) {
+    ESP_LOGE(MPU9250_INTERFACE_TAG, "MPU9250 SPI functions not yet implemented!");
+    return 1;
+//    return 0;
 }
 
 /**
@@ -173,9 +154,10 @@ uint8_t mpu9250_interface_spi_deinit(void)
  *             - 1 read failed
  * @note       none
  */
-uint8_t mpu9250_interface_spi_read(uint8_t reg, uint8_t *buf, uint16_t len)
-{
-    return 0;
+uint8_t mpu9250_interface_spi_read(uint8_t reg, uint8_t *buf, uint16_t len) {
+    ESP_LOGE(MPU9250_INTERFACE_TAG, "MPU9250 SPI functions not yet implemented!");
+    return 1;
+//    return 0;
 }
 
 /**
@@ -188,9 +170,10 @@ uint8_t mpu9250_interface_spi_read(uint8_t reg, uint8_t *buf, uint16_t len)
  *            - 1 write failed
  * @note      none
  */
-uint8_t mpu9250_interface_spi_write(uint8_t reg, uint8_t *buf, uint16_t len)
-{
-    return 0;
+uint8_t mpu9250_interface_spi_write(uint8_t reg, uint8_t *buf, uint16_t len) {
+    ESP_LOGE(MPU9250_INTERFACE_TAG, "MPU9250 SPI functions not yet implemented!");
+    return 1;
+//    return 0;
 }
 
 /**
@@ -198,9 +181,8 @@ uint8_t mpu9250_interface_spi_write(uint8_t reg, uint8_t *buf, uint16_t len)
  * @param[in] ms
  * @note      none
  */
-void mpu9250_interface_delay_ms(uint32_t ms)
-{
-    vTaskDelay(pdMS_TO_TICKS(ms));
+void mpu9250_interface_delay_ms(uint32_t ms) {
+    esp_rom_delay_us(1000*ms);
 }
 
 /**
@@ -208,11 +190,10 @@ void mpu9250_interface_delay_ms(uint32_t ms)
  * @param[in] fmt is the format data
  * @note      none
  */
-void mpu9250_interface_debug_print(const char *const fmt, ...)
-{
+void mpu9250_interface_debug_print(const char *const fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    esp_log_writev(ESP_LOG_DEBUG,MPU9250_INTERFACE_TAG, fmt, args);
+    esp_log_writev(ESP_LOG_DEBUG, MPU9250_INTERFACE_TAG, fmt, args);
     va_end(args);
 }
 
@@ -221,42 +202,34 @@ void mpu9250_interface_debug_print(const char *const fmt, ...)
  * @param[in] type is the irq type
  * @note      none
  */
-void mpu9250_debug_receive_callback(uint8_t type)
-{
-    switch (type)
-    {
-        case MPU9250_INTERRUPT_MOTION :
-        {
+void mpu9250_debug_receive_callback(uint8_t type) {
+    switch (type) {
+        case MPU9250_INTERRUPT_MOTION : {
             mpu9250_interface_debug_print("mpu9250: irq motion.\n");
 
             break;
         }
-        case MPU9250_INTERRUPT_FIFO_OVERFLOW :
-        {
+        case MPU9250_INTERRUPT_FIFO_OVERFLOW : {
             mpu9250_interface_debug_print("mpu9250: irq fifo overflow.\n");
 
             break;
         }
-        case MPU9250_INTERRUPT_FSYNC_INT :
-        {
+        case MPU9250_INTERRUPT_FSYNC_INT : {
             mpu9250_interface_debug_print("mpu9250: irq fsync int.\n");
 
             break;
         }
-        case MPU9250_INTERRUPT_DMP :
-        {
+        case MPU9250_INTERRUPT_DMP : {
             mpu9250_interface_debug_print("mpu9250: irq dmp\n");
 
             break;
         }
-        case MPU9250_INTERRUPT_DATA_READY :
-        {
+        case MPU9250_INTERRUPT_DATA_READY : {
             mpu9250_interface_debug_print("mpu9250: irq data ready\n");
 
             break;
         }
-        default :
-        {
+        default : {
             mpu9250_interface_debug_print("mpu9250: irq unknown code.\n");
 
             break;
@@ -270,48 +243,39 @@ void mpu9250_debug_receive_callback(uint8_t type)
  * @param[in] direction is the tap direction
  * @note      none
  */
-void mpu9250_debug_dmp_tap_callback(uint8_t count, uint8_t direction)
-{
-    switch (direction)
-    {
-        case MPU9250_DMP_TAP_X_UP :
-        {
+void mpu9250_debug_dmp_tap_callback(uint8_t count, uint8_t direction) {
+    switch (direction) {
+        case MPU9250_DMP_TAP_X_UP : {
             mpu9250_interface_debug_print("mpu9250: tap irq x up with %d.\n", count);
 
             break;
         }
-        case MPU9250_DMP_TAP_X_DOWN :
-        {
+        case MPU9250_DMP_TAP_X_DOWN : {
             mpu9250_interface_debug_print("mpu9250: tap irq x down with %d.\n", count);
 
             break;
         }
-        case MPU9250_DMP_TAP_Y_UP :
-        {
+        case MPU9250_DMP_TAP_Y_UP : {
             mpu9250_interface_debug_print("mpu9250: tap irq y up with %d.\n", count);
 
             break;
         }
-        case MPU9250_DMP_TAP_Y_DOWN :
-        {
+        case MPU9250_DMP_TAP_Y_DOWN : {
             mpu9250_interface_debug_print("mpu9250: tap irq y down with %d.\n", count);
 
             break;
         }
-        case MPU9250_DMP_TAP_Z_UP :
-        {
+        case MPU9250_DMP_TAP_Z_UP : {
             mpu9250_interface_debug_print("mpu9250: tap irq z up with %d.\n", count);
 
             break;
         }
-        case MPU9250_DMP_TAP_Z_DOWN :
-        {
+        case MPU9250_DMP_TAP_Z_DOWN : {
             mpu9250_interface_debug_print("mpu9250: tap irq z down with %d.\n", count);
 
             break;
         }
-        default :
-        {
+        default : {
             mpu9250_interface_debug_print("mpu9250: tap irq unknown code.\n");
 
             break;
@@ -324,36 +288,29 @@ void mpu9250_debug_dmp_tap_callback(uint8_t count, uint8_t direction)
  * @param[in] orientation is the dmp orientation
  * @note      none
  */
-void mpu9250_debug_dmp_orient_callback(uint8_t orientation)
-{
-    switch (orientation)
-    {
-        case MPU9250_DMP_ORIENT_PORTRAIT :
-        {
+void mpu9250_debug_dmp_orient_callback(uint8_t orientation) {
+    switch (orientation) {
+        case MPU9250_DMP_ORIENT_PORTRAIT : {
             mpu9250_interface_debug_print("mpu9250: orient irq portrait.\n");
 
             break;
         }
-        case MPU9250_DMP_ORIENT_LANDSCAPE :
-        {
+        case MPU9250_DMP_ORIENT_LANDSCAPE : {
             mpu9250_interface_debug_print("mpu9250: orient irq landscape.\n");
 
             break;
         }
-        case MPU9250_DMP_ORIENT_REVERSE_PORTRAIT :
-        {
+        case MPU9250_DMP_ORIENT_REVERSE_PORTRAIT : {
             mpu9250_interface_debug_print("mpu9250: orient irq reverse portrait.\n");
 
             break;
         }
-        case MPU9250_DMP_ORIENT_REVERSE_LANDSCAPE :
-        {
+        case MPU9250_DMP_ORIENT_REVERSE_LANDSCAPE : {
             mpu9250_interface_debug_print("mpu9250: orient irq reverse landscape.\n");
 
             break;
         }
-        default :
-        {
+        default : {
             mpu9250_interface_debug_print("mpu9250: orient irq unknown code.\n");
 
             break;
