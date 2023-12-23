@@ -15,7 +15,7 @@ extern "C"{
 
 
 
-esp_err_t mpu9250_set_i2c_config(i2c_master_bus_config_t *master_cfg, i2c_device_config_t *dev_conf);
+esp_err_t mpu9250_set_i2c_config(i2c_master_bus_config_t *master_cfg, i2c_device_config_t *mpu9250_dev_conf);
 
 
 

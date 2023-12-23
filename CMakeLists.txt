@@ -1,6 +1,6 @@
 idf_component_register(
-        SRCS "mpu9250.c"
-        REQUIRES driver log)
+        SRCS "mpu9250.c" "mpu9250_tests.c"
+        REQUIRES driver log freertos)
 target_include_directories(${COMPONENT_LIB} PUBLIC .)
 target_include_directories(${COMPONENT_LIB} PUBLIC include)
 set(driver_srcs

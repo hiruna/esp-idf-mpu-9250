@@ -4,10 +4,21 @@
 
 ESP-IDF C driver for [TDK InvenSense MPU9250](https://invensense.tdk.com/products/motion-tracking/9-axis/mpu-9250/) 9-axis gyroscope and accelerometer.
 
-Core MPU-9250 driver is sourced from [libdriver/mpu9250](https://github.com/libdriver/mpu9250). This repo is the ESP-IDF
-component implementation of it.
+Core MPU-9250 driver is sourced from [libdriver/mpu9250](https://github.com/libdriver/mpu9250) 
+and modified to work with the ESP-IDF framework as an IDF component.
+* ESP-IDF Version >=5.3 (master)
 
-* ESP-IDF Version >=5.3
+## Protocols
+- [x] I2C
+- [ ] SPI
+
+## Features
+- [x] Basic sensor reading
+- [ ] FIFO
+- [ ] Interrupts/ISR
+- [ ] DMP
+- [ ] I2C Slave devices
+
 
 ## References
 * [MPU-9250 Datasheet](https://invensense.tdk.com/download-pdf/icm-42370-p-datasheet/)

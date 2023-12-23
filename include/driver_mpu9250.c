@@ -275,7 +275,6 @@ static uint16_t gs_st_tb[256] =
  * @note       none
  */
 static uint8_t a_mpu9250_read(mpu9250_handle_t *handle, uint8_t reg, uint8_t *buf, uint16_t len) {
-    handle->debug_print("mpu9250: a_mpu9250_read start...\n");
     if (handle->iic_spi == MPU9250_INTERFACE_IIC)                                     /* if iic interface */
     {
         if (handle->iic_read(handle->iic_addr, reg, (uint8_t *) buf, len) != 0)        /* read data */
@@ -284,7 +283,6 @@ static uint8_t a_mpu9250_read(mpu9250_handle_t *handle, uint8_t reg, uint8_t *bu
         } else {
             return 0;                                                                 /* success return 0 */
         }
-        handle->debug_print("mpu9250: a_mpu9250_read i2c finish...\n");
     } else                                                                              /* spi interface */
     {
         if (handle->spi_read(reg | 0x80, (uint8_t *) buf, len) != 0)                   /* read data */
@@ -294,7 +292,6 @@ static uint8_t a_mpu9250_read(mpu9250_handle_t *handle, uint8_t reg, uint8_t *bu
             return 0;                                                                 /* success return 0 */
         }
     }
-    handle->debug_print("mpu9250: a_mpu9250_read end...\n");
 }
 
 /**
@@ -341,7 +338,7 @@ static uint8_t a_mpu9250_write(mpu9250_handle_t *handle, uint8_t reg, uint8_t *b
 static uint8_t a_mpu9250_mag_write(mpu9250_handle_t *handle, uint8_t reg, uint8_t *data) {
     if (handle->iic_spi == MPU9250_INTERFACE_IIC)                                            /* if iic interface */
     {
-        if (handle->iic_write(AK8963_IIC_ADDRESS << 1, reg, (uint8_t *) data, 1) != 0)        /* write data */
+        if (handle->iic_write(AK8963_IIC_ADDRESS, reg, (uint8_t *) data, 1) != 0)        /* write data */
         {
             return 1;                                                                        /* return error */
         } else {
@@ -367,7 +364,7 @@ static uint8_t a_mpu9250_mag_write(mpu9250_handle_t *handle, uint8_t reg, uint8_
 static uint8_t a_mpu9250_mag_read(mpu9250_handle_t *handle, uint8_t reg, uint8_t *buf, uint16_t len) {
     if (handle->iic_spi == MPU9250_INTERFACE_IIC)                                            /* if iic interface */
     {
-        if (handle->iic_read(AK8963_IIC_ADDRESS << 1, reg, (uint8_t *) buf, len) != 0)        /* read data */
+        if (handle->iic_read(AK8963_IIC_ADDRESS, reg, (uint8_t *) buf, len) != 0)        /* read data */
         {
             return 1;                                                                        /* return error */
         } else {
@@ -4053,76 +4050,64 @@ uint8_t mpu9250_init(mpu9250_handle_t *handle) {
     {
         return 2;                                                                   /* return error */
     }
-    handle->debug_print("mpu9250: 1\n");
     if (handle->debug_print == NULL)                                                /* check debug_print */
     {
         return 3;                                                                   /* return error */
     }
-    handle->debug_print("mpu9250: 2\n");
     if (handle->iic_init == NULL)                                                   /* check iic_init */
     {
         handle->debug_print("mpu9250: iic_init is null.\n");                        /* iic_init is null */
 
         return 3;                                                                   /* return error */
     }
-    handle->debug_print("mpu9250: 3\n");
     if (handle->iic_deinit == NULL)                                                 /* check iic_deinit */
     {
         handle->debug_print("mpu9250: iic_deinit is null.\n");                      /* iic_deinit is null */
 
         return 3;                                                                   /* return error */
     }
-    handle->debug_print("mpu9250: 4\n");
     if (handle->iic_read == NULL)                                                   /* check iic_read */
     {
         handle->debug_print("mpu9250: iic_read is null.\n");                        /* iic_read is null */
 
         return 3;                                                                   /* return error */
     }
-    handle->debug_print("mpu9250: 5\n");
     if (handle->iic_write == NULL)                                                  /* check iic_write */
     {
         handle->debug_print("mpu9250: iic_write is null.\n");                       /* iic_write is null */
 
         return 3;                                                                   /* return error */
     }
-    handle->debug_print("mpu9250: 6\n");
-
     if (handle->spi_init == NULL)                                                   /* check spi_init */
     {
         handle->debug_print("mpu9250: spi_init is null.\n");                        /* spi_init is null */
 
         return 3;                                                                   /* return error */
     }
-    handle->debug_print("mpu9250: 7\n");
     if (handle->spi_deinit == NULL)                                                 /* check spi_deinit */
     {
         handle->debug_print("mpu9250: spi_deinit is null.\n");                      /* spi_deinit is null */
 
         return 3;                                                                   /* return error */
     }
-    handle->debug_print("mpu9250: 8\n");
     if (handle->spi_read == NULL)                                                   /* check spi_read */
     {
         handle->debug_print("mpu9250: spi_read is null.\n");                        /* spi_read is null */
 
         return 3;                                                                   /* return error */
     }
-    handle->debug_print("mpu9250: 9\n");
     if (handle->spi_write == NULL)                                                  /* check spi_write */
     {
         handle->debug_print("mpu9250: spi_write is null.\n");                       /* spi_write is null */
 
         return 3;                                                                   /* return error */
     }
-    handle->debug_print("mpu9250: 10\n");
     if (handle->delay_ms == NULL)                                                   /* check delay_ms */
     {
         handle->debug_print("mpu9250: delay_ms is null.\n");                        /* delay_ms is null */
 
         return 3;                                                                   /* return error */
     }
-    handle->debug_print("mpu9250: 11\n");
     if (handle->receive_callback == NULL)                                           /* check receive_callback */
     {
         handle->debug_print("mpu9250: receive_callback is null.\n");                /* receive_callback is null */
@@ -4139,19 +4124,16 @@ uint8_t mpu9250_init(mpu9250_handle_t *handle) {
 
             return 1;                                                               /* return error */
         }
-        handle->debug_print("mpu9250: 12\n");
+    } else                                                                            /* if spi interface */
+    {
+        res = handle->spi_init();                                                   /* spi init */
+        if (res != 0)                                                               /* check the result */
+        {
+            handle->debug_print("mpu9250: spi init failed.\n");                     /* spi init failed */
+
+            return 1;                                                               /* return error */
+        }
     }
-//    } else                                                                            /* if spi interface */
-//    {
-//        res = handle->spi_init();                                                   /* spi init */
-//        if (res != 0)                                                               /* check the result */
-//        {
-//            handle->debug_print("mpu9250: spi init failed.\n");                     /* spi init failed */
-//
-//            return 1;                                                               /* return error */
-//        }
-//    }
-    handle->debug_print("mpu9250: read who am i...\n");
     res = a_mpu9250_read(handle, MPU9250_REG_WHO_AM_I, &prev, 1);                   /* read who am I */
     if (res != 0)                                                                   /* check the result */
     {
@@ -4160,7 +4142,6 @@ uint8_t mpu9250_init(mpu9250_handle_t *handle) {
 
         return 5;                                                                   /* return error */
     }
-    handle->debug_print("mpu9250: 13\n");
     if (prev != 0x71)                                                               /* check the id */
     {
         handle->debug_print("mpu9250: id is invalid.\n");                           /* id is invalid */
@@ -4168,7 +4149,6 @@ uint8_t mpu9250_init(mpu9250_handle_t *handle) {
 
         return 5;                                                                   /* return error */
     }
-    handle->debug_print("mpu9250: 14\n");
     prev = 1 << 7;                                                                  /* reset the device */
     res = a_mpu9250_write(handle, MPU9250_REG_PWR_MGMT_1, &prev, 1);                /* write pwr mgmt 1 */
     if (res != 0)                                                                   /* check the result */
@@ -4178,13 +4158,10 @@ uint8_t mpu9250_init(mpu9250_handle_t *handle) {
 
         return 4;                                                                   /* return error */
     }
-    handle->debug_print("mpu9250: 15\n");
-    handle->debug_print("mpu9250: delay 10\n");
     handle->delay_ms(10);                                                           /* delay 10 ms */
     timeout = 100;                                                                  /* set the timeout 1000 ms */
     while (timeout != 0)                                                            /* check the timeout */
     {
-        handle->debug_print("mpu9250: read pwr\n");
         res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, &prev, 1);             /* read pwr mgmt 1 */
         if (res != 0)                                                               /* check the result */
         {
@@ -4200,7 +4177,6 @@ uint8_t mpu9250_init(mpu9250_handle_t *handle) {
 
             return 0;                                                               /* success return 0 */
         }
-        handle->debug_print("mpu9250: delay 10\n");
         handle->delay_ms(10);                                                       /* delay 10 ms */
         timeout--;                                                                  /* timeout-- */
     }
@@ -4713,9 +4689,10 @@ uint8_t mpu9250_read_temperature(mpu9250_handle_t *handle, int16_t (*raw), float
 
         return 1;                                                            /* return error */
     }
+
     *raw = (int16_t) ((uint16_t) buf[0] << 8) | buf[1];                        /* get the raw */
     *degrees = (float) (*raw) / 321.0f + 21.0f;                               /* convert the degrees */
-
+    handle->debug_print("mpu9250: temp read ok.\n");
     return 0;                                                                /* success return 0 */
 }
 
