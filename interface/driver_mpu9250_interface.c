@@ -39,11 +39,17 @@ uint8_t mpu9250_interface_iic_init(void) {
     esp_err_t ret;
 
     ret = i2c_new_master_bus(i2c_master_conf, &i2c_master_bus_hdl);
-    assert(ESP_OK == ret);
-    ret = i2c_master_bus_add_device(i2c_master_bus_hdl, i2c_dev_conf, &i2c_master_dev_hdl);
-    if (ret != ESP_OK) {
+    if(ret != ESP_OK) {
+        ESP_LOGE(MPU9250_INTERFACE_TAG, "i2c_new_master_bus error!");
         return 1;
     }
+    ret = i2c_master_bus_add_device(i2c_master_bus_hdl, i2c_dev_conf, &i2c_master_dev_hdl);
+    if(ret != ESP_OK) {
+        ESP_LOGE(MPU9250_INTERFACE_TAG, "i2c_master_bus_add_device error!");
+        return 1;
+    }
+
+    ESP_LOGI(MPU9250_INTERFACE_TAG, "mpu9250_interface_iic_init OK :)");
 
     return 0;
 }
@@ -82,10 +88,11 @@ uint8_t mpu9250_interface_iic_deinit(void) {
  */
 uint8_t mpu9250_interface_iic_read(uint8_t addr, uint8_t reg, uint8_t *buf, uint16_t len) {
     esp_err_t ret;
-
-    ret = i2c_master_receive(i2c_master_dev_hdl, buf, len, I2C_READ_TIMEOUT_MS);
-    uint8_t wr_buf[] = {(0xD6 | I2C_MASTER_WRITE)};
-    i2c_master_transmit_receive(i2c_master_dev_hdl, wr_buf, sizeof(wr_buf), buf, len, -1);
+    uint8_t write_buf[1] = {reg};
+//    uint8_t write_buf[3] = {(addr << 1 | I2C_MASTER_WRITE), reg,(addr << 1 | I2C_MASTER_READ)};
+    // uint8_t write_buf[20] = {reg};
+    ESP_LOGI(MPU9250_INTERFACE_TAG, "mpu9250_interface_iic_read() | addr: %x, reg: %x, buff: %s, len: %d", addr, reg,buf, len);
+    ret = i2c_master_transmit_receive(i2c_master_dev_hdl, write_buf, sizeof(write_buf), buf, len, I2C_READ_TIMEOUT_MS*5);
     assert(ESP_OK == ret);
     if (ret != ESP_OK) {
         return 1;
@@ -106,12 +113,13 @@ uint8_t mpu9250_interface_iic_read(uint8_t addr, uint8_t reg, uint8_t *buf, uint
  */
 uint8_t mpu9250_interface_iic_write(uint8_t addr, uint8_t reg, uint8_t *buf, uint16_t len) {
     esp_err_t ret;
-
-    ret = i2c_master_transmit(i2c_master_dev_hdl, buf, len, I2C_WRITE_TIMEOUT_MS);
-    assert(ESP_OK == ret);
-    if (ret != ESP_OK) {
-        return 1;
+    uint8_t write_buf[len+1];
+    write_buf[0]=reg;
+    for(int i=1;i<len+1;i++){
+        write_buf[i] = buf[i-1];
     }
+    ret = i2c_master_transmit(i2c_master_dev_hdl, write_buf, sizeof(write_buf), I2C_WRITE_TIMEOUT_MS);
+    assert(ESP_OK == ret);
     if (ret != ESP_OK) {
         return 1;
     }
@@ -182,7 +190,9 @@ uint8_t mpu9250_interface_spi_write(uint8_t reg, uint8_t *buf, uint16_t len) {
  * @note      none
  */
 void mpu9250_interface_delay_ms(uint32_t ms) {
-    esp_rom_delay_us(1000*ms);
+    ESP_LOGI(MPU9250_INTERFACE_TAG,"pause for %ld ms...", ms);
+    //esp_rom_delay_us(1000*ms);
+
 }
 
 /**

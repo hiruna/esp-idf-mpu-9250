@@ -279,6 +279,7 @@ static uint16_t gs_st_tb[256] =
  * @note       none
  */
 static uint8_t a_mpu9250_read(mpu9250_handle_t *handle, uint8_t reg, uint8_t *buf, uint16_t len) {
+    handle->debug_print("mpu9250: a_mpu9250_read start...\n");
     if (handle->iic_spi == MPU9250_INTERFACE_IIC)                                     /* if iic interface */
     {
         if (handle->iic_read(handle->iic_addr, reg, (uint8_t *) buf, len) != 0)        /* read data */
@@ -287,6 +288,7 @@ static uint8_t a_mpu9250_read(mpu9250_handle_t *handle, uint8_t reg, uint8_t *bu
         } else {
             return 0;                                                                 /* success return 0 */
         }
+        handle->debug_print("mpu9250: a_mpu9250_read i2c finish...\n");
     } else                                                                              /* spi interface */
     {
         if (handle->spi_read(reg | 0x80, (uint8_t *) buf, len) != 0)                   /* read data */
@@ -296,6 +298,7 @@ static uint8_t a_mpu9250_read(mpu9250_handle_t *handle, uint8_t reg, uint8_t *bu
             return 0;                                                                 /* success return 0 */
         }
     }
+    handle->debug_print("mpu9250: a_mpu9250_read end...\n");
 }
 
 /**
@@ -1016,17 +1019,17 @@ static uint8_t a_mpu9250_get_st_biases(mpu9250_handle_t *handle,
         gyro_offset[2] += (int32_t) gyro_cur[2];                                                     /* gyro offset 2 */
     }
 
-    gyro_offset[0] = (int32_t)(
+    gyro_offset[0] = (int32_t) (
             ((int64_t) gyro_offset[0] << 16) / (32768 / 250) / pack_cnt);         /* set the gyro offset 0 */
-    gyro_offset[1] = (int32_t)(
+    gyro_offset[1] = (int32_t) (
             ((int64_t) gyro_offset[1] << 16) / (32768 / 250) / pack_cnt);         /* set the gyro offset 1 */
-    gyro_offset[2] = (int32_t)(
+    gyro_offset[2] = (int32_t) (
             ((int64_t) gyro_offset[2] << 16) / (32768 / 250) / pack_cnt);         /* set the gyro offset 2 */
-    accel_offset[0] = (int32_t)(
+    accel_offset[0] = (int32_t) (
             ((int64_t) accel_offset[0] << 16) / (32768 / 16) / pack_cnt);        /* set the accel offset 0 */
-    accel_offset[1] = (int32_t)(
+    accel_offset[1] = (int32_t) (
             ((int64_t) accel_offset[1] << 16) / (32768 / 16) / pack_cnt);        /* set the accel offset 1 */
-    accel_offset[2] = (int32_t)(
+    accel_offset[2] = (int32_t) (
             ((int64_t) accel_offset[2] << 16) / (32768 / 16) / pack_cnt);        /* set the accel offset 2 */
     if (accel_offset[2] >
         0L)                                                                       /* check the accel offset */
@@ -1108,7 +1111,7 @@ uint8_t mpu9250_dmp_load_firmware(mpu9250_handle_t *handle) {
     {
         this_write = MIN(16, size - i);                                                  /* get the written size */
 
-        res = a_mpu9250_write_mem(handle, i, (uint8_t * )(gs_mpu9250_dmp_code + i),
+        res = a_mpu9250_write_mem(handle, i, (uint8_t *) (gs_mpu9250_dmp_code + i),
                                   this_write);                                           /* write data */
         if (res != 0)                                                                    /* check result */
         {
@@ -1178,10 +1181,10 @@ uint8_t mpu9250_dmp_set_pedometer_walk_time(mpu9250_handle_t *handle, uint32_t m
     }
 
     ms /= 20;                                                                            /* div 20 */
-    tmp[0] = (uint8_t)((ms >> 24) & 0xFF);                                               /* set part 0 */
-    tmp[1] = (uint8_t)((ms >> 16) & 0xFF);                                               /* set part 1 */
-    tmp[2] = (uint8_t)((ms >> 8) & 0xFF);                                                /* set part 2 */
-    tmp[3] = (uint8_t)(ms & 0xFF);                                                       /* set part 3 */
+    tmp[0] = (uint8_t) ((ms >> 24) & 0xFF);                                               /* set part 0 */
+    tmp[1] = (uint8_t) ((ms >> 16) & 0xFF);                                               /* set part 1 */
+    tmp[2] = (uint8_t) ((ms >> 8) & 0xFF);                                                /* set part 2 */
+    tmp[3] = (uint8_t) (ms & 0xFF);                                                       /* set part 3 */
 
     res = a_mpu9250_write_mem(handle, MPU9250_DMP_D_PEDSTD_TIMECTR, tmp, 4);             /* write data */
     if (res != 0)                                                                        /* check result */
@@ -1270,10 +1273,10 @@ uint8_t mpu9250_dmp_set_pedometer_step_count(mpu9250_handle_t *handle, uint32_t 
         return 4;                                                                        /* return error */
     }
 
-    tmp[0] = (uint8_t)((count >> 24) & 0xFF);                                            /* set part 0 */
-    tmp[1] = (uint8_t)((count >> 16) & 0xFF);                                            /* set part 1 */
-    tmp[2] = (uint8_t)((count >> 8) & 0xFF);                                             /* set part 2 */
-    tmp[3] = (uint8_t)(count & 0xFF);                                                    /* set part 3 */
+    tmp[0] = (uint8_t) ((count >> 24) & 0xFF);                                            /* set part 0 */
+    tmp[1] = (uint8_t) ((count >> 16) & 0xFF);                                            /* set part 1 */
+    tmp[2] = (uint8_t) ((count >> 8) & 0xFF);                                             /* set part 2 */
+    tmp[3] = (uint8_t) (count & 0xFF);                                                    /* set part 3 */
 
     res = a_mpu9250_write_mem(handle, MPU9250_DMP_D_PEDSTD_STEPCTR, tmp, 4);             /* write data */
     if (res != 0)                                                                        /* check result */
@@ -1414,7 +1417,7 @@ uint8_t mpu9250_dmp_get_shake_reject_timeout(mpu9250_handle_t *handle, uint16_t 
 
         return 1;                                                              /* return error */
     }
-    *ms = (uint16_t)((uint16_t) tmp[0] << 8) | tmp[1];                          /* get the raw time */
+    *ms = (uint16_t) ((uint16_t) tmp[0] << 8) | tmp[1];                          /* get the raw time */
     *ms *= (1000 / MPU9250_DMP_SAMPLE_RATE);                                   /* convert time */
 
     return 0;                                                                  /* success return 0 */
@@ -1504,7 +1507,7 @@ uint8_t mpu9250_dmp_get_shake_reject_time(mpu9250_handle_t *handle, uint16_t *ms
 
         return 1;                                                              /* return error */
     }
-    *ms = (uint16_t)((uint16_t) tmp[0] << 8) | tmp[1];                          /* get the raw time */
+    *ms = (uint16_t) ((uint16_t) tmp[0] << 8) | tmp[1];                          /* get the raw time */
     *ms *= (1000 / MPU9250_DMP_SAMPLE_RATE);                                   /* convert time */
 
     return 0;                                                                  /* success return 0 */
@@ -1543,10 +1546,10 @@ uint8_t mpu9250_dmp_set_shake_reject_thresh(mpu9250_handle_t *handle, uint16_t d
     }
 
     thresh_scaled = MPU9250_DMP_GYRO_SF / 1000 * dps;                          /* convert to thresh scaled */
-    tmp[0] = (uint8_t)(((uint32_t) thresh_scaled >> 24) & 0xFF);                /* set the part 3 */
-    tmp[1] = (uint8_t)(((uint32_t) thresh_scaled >> 16) & 0xFF);                /* set the part 2 */
-    tmp[2] = (uint8_t)(((uint32_t) thresh_scaled >> 8) & 0xFF);                 /* set the part 1 */
-    tmp[3] = (uint8_t)((uint32_t) thresh_scaled & 0xFF);                        /* set the part 0 */
+    tmp[0] = (uint8_t) (((uint32_t) thresh_scaled >> 24) & 0xFF);                /* set the part 3 */
+    tmp[1] = (uint8_t) (((uint32_t) thresh_scaled >> 16) & 0xFF);                /* set the part 2 */
+    tmp[2] = (uint8_t) (((uint32_t) thresh_scaled >> 8) & 0xFF);                 /* set the part 1 */
+    tmp[3] = (uint8_t) ((uint32_t) thresh_scaled & 0xFF);                        /* set the part 0 */
 
     res = a_mpu9250_write_mem(handle, MPU9250_DMP_D_1_92, tmp, 4);             /* write data */
     if (res != 0)                                                              /* check result */
@@ -1600,8 +1603,8 @@ uint8_t mpu9250_dmp_get_shake_reject_thresh(mpu9250_handle_t *handle, uint16_t *
     }
     thresh_scaled = (((uint32_t) tmp[0] << 24) | ((uint32_t) tmp[1] << 16) |
                      ((uint32_t) tmp[2] << 8) | tmp[3]);                         /* get the thresh scaled */
-    *dps = (uint16_t)((float) (thresh_scaled) /
-                      ((float) (MPU9250_DMP_GYRO_SF) / 1000.0f));                /* convert the thresh scaled */
+    *dps = (uint16_t) ((float) (thresh_scaled) /
+                       ((float) (MPU9250_DMP_GYRO_SF) / 1000.0f));                /* convert the thresh scaled */
 
     return 0;                                                                  /* success return 0 */
 }
@@ -1690,7 +1693,7 @@ uint8_t mpu9250_dmp_get_tap_time_multi(mpu9250_handle_t *handle, uint16_t *ms) {
 
         return 1;                                                              /* return error */
     }
-    *ms = (uint16_t)((uint16_t) tmp[0] << 8) | tmp[1];                          /* get the raw time */
+    *ms = (uint16_t) ((uint16_t) tmp[0] << 8) | tmp[1];                          /* get the raw time */
     *ms *= (1000 / MPU9250_DMP_SAMPLE_RATE);                                   /* convert time */
 
     return 0;                                                                  /* success return 0 */
@@ -1780,7 +1783,7 @@ uint8_t mpu9250_dmp_get_tap_time(mpu9250_handle_t *handle, uint16_t *ms) {
 
         return 1;                                                              /* return error */
     }
-    *ms = (uint16_t)((uint16_t) tmp[0] << 8) | tmp[1];                          /* get the raw time */
+    *ms = (uint16_t) ((uint16_t) tmp[0] << 8) | tmp[1];                          /* get the raw time */
     *ms *= (1000 / MPU9250_DMP_SAMPLE_RATE);                                   /* convert time */
 
     return 0;                                                                  /* success return 0 */
@@ -2209,14 +2212,14 @@ uint8_t mpu9250_dmp_set_gyro_bias(mpu9250_handle_t *handle, int32_t bias[3]) {
         gyro_bias_body[2] *= -1;                                                                    /* *(-1) */
     }
 
-    gyro_bias_body[0] = (int32_t)(((int64_t) gyro_bias_body[0] * MPU9250_DMP_GYRO_SF) >> 30);        /* set body 0 */
-    gyro_bias_body[1] = (int32_t)(((int64_t) gyro_bias_body[1] * MPU9250_DMP_GYRO_SF) >> 30);        /* set body 1 */
-    gyro_bias_body[2] = (int32_t)(((int64_t) gyro_bias_body[2] * MPU9250_DMP_GYRO_SF) >> 30);        /* set body 2 */
+    gyro_bias_body[0] = (int32_t) (((int64_t) gyro_bias_body[0] * MPU9250_DMP_GYRO_SF) >> 30);        /* set body 0 */
+    gyro_bias_body[1] = (int32_t) (((int64_t) gyro_bias_body[1] * MPU9250_DMP_GYRO_SF) >> 30);        /* set body 1 */
+    gyro_bias_body[2] = (int32_t) (((int64_t) gyro_bias_body[2] * MPU9250_DMP_GYRO_SF) >> 30);        /* set body 2 */
 
-    regs[0] = (uint8_t)((gyro_bias_body[0] >> 24) & 0xFF);                                          /* set part 0 */
-    regs[1] = (uint8_t)((gyro_bias_body[0] >> 16) & 0xFF);                                          /* set part 1 */
-    regs[2] = (uint8_t)((gyro_bias_body[0] >> 8) & 0xFF);                                           /* set part 2 */
-    regs[3] = (uint8_t)(gyro_bias_body[0] & 0xFF);                                                  /* set part 3 */
+    regs[0] = (uint8_t) ((gyro_bias_body[0] >> 24) & 0xFF);                                          /* set part 0 */
+    regs[1] = (uint8_t) ((gyro_bias_body[0] >> 16) & 0xFF);                                          /* set part 1 */
+    regs[2] = (uint8_t) ((gyro_bias_body[0] >> 8) & 0xFF);                                           /* set part 2 */
+    regs[3] = (uint8_t) (gyro_bias_body[0] & 0xFF);                                                  /* set part 3 */
     res = a_mpu9250_write_mem(handle, MPU9250_DMP_D_EXT_GYRO_BIAS_X, (uint8_t *) regs, 4);           /* write data */
     if (res != 0)                                                                                   /* check result */
     {
@@ -2225,10 +2228,10 @@ uint8_t mpu9250_dmp_set_gyro_bias(mpu9250_handle_t *handle, int32_t bias[3]) {
 
         return 1;                                                                                   /* return error */
     }
-    regs[0] = (uint8_t)((gyro_bias_body[1] >> 24) & 0xFF);                                          /* set part 0 */
-    regs[1] = (uint8_t)((gyro_bias_body[1] >> 16) & 0xFF);                                          /* set part 1 */
-    regs[2] = (uint8_t)((gyro_bias_body[1] >> 8) & 0xFF);                                           /* set part 2 */
-    regs[3] = (uint8_t)(gyro_bias_body[1] & 0xFF);                                                  /* set part 3 */
+    regs[0] = (uint8_t) ((gyro_bias_body[1] >> 24) & 0xFF);                                          /* set part 0 */
+    regs[1] = (uint8_t) ((gyro_bias_body[1] >> 16) & 0xFF);                                          /* set part 1 */
+    regs[2] = (uint8_t) ((gyro_bias_body[1] >> 8) & 0xFF);                                           /* set part 2 */
+    regs[3] = (uint8_t) (gyro_bias_body[1] & 0xFF);                                                  /* set part 3 */
     res = a_mpu9250_write_mem(handle, MPU9250_DMP_D_EXT_GYRO_BIAS_Y, (uint8_t *) regs, 4);           /* write data */
     if (res != 0)                                                                                   /* check result */
     {
@@ -2237,10 +2240,10 @@ uint8_t mpu9250_dmp_set_gyro_bias(mpu9250_handle_t *handle, int32_t bias[3]) {
 
         return 1;                                                                                   /* return error */
     }
-    regs[0] = (uint8_t)((gyro_bias_body[2] >> 24) & 0xFF);                                          /* set part 0 */
-    regs[1] = (uint8_t)((gyro_bias_body[2] >> 16) & 0xFF);                                          /* set part 1 */
-    regs[2] = (uint8_t)((gyro_bias_body[2] >> 8) & 0xFF);                                           /* set part 2 */
-    regs[3] = (uint8_t)(gyro_bias_body[2] & 0xFF);                                                  /* set part 3 */
+    regs[0] = (uint8_t) ((gyro_bias_body[2] >> 24) & 0xFF);                                          /* set part 0 */
+    regs[1] = (uint8_t) ((gyro_bias_body[2] >> 16) & 0xFF);                                          /* set part 1 */
+    regs[2] = (uint8_t) ((gyro_bias_body[2] >> 8) & 0xFF);                                           /* set part 2 */
+    regs[3] = (uint8_t) (gyro_bias_body[2] & 0xFF);                                                  /* set part 3 */
     res = a_mpu9250_write_mem(handle, MPU9250_DMP_D_EXT_GYRO_BIAS_Z, (uint8_t *) regs, 4);           /* write data */
     if (res != 0)                                                                                   /* check result */
     {
@@ -2290,7 +2293,7 @@ uint8_t mpu9250_dmp_set_accel_bias(mpu9250_handle_t *handle, int32_t bias[3]) {
         return 4;                                                                           /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t *) &prev,
                          1);            /* read accelerometer config */
     if (res != 0)                                                                           /* check result */
     {
@@ -2330,21 +2333,21 @@ uint8_t mpu9250_dmp_set_accel_bias(mpu9250_handle_t *handle, int32_t bias[3]) {
         accel_bias_body[2] *= -1;                                                           /* *(-1) */
     }
 
-    accel_bias_body[0] = (int32_t)(((int64_t) accel_bias_body[0] * accel_sf) >> 30);         /* set the bias body 0 */
-    accel_bias_body[1] = (int32_t)(((int64_t) accel_bias_body[1] * accel_sf) >> 30);         /* set the bias body 1 */
-    accel_bias_body[2] = (int32_t)(((int64_t) accel_bias_body[2] * accel_sf) >> 30);         /* set the bias body 2 */
-    regs[0] = (uint8_t)((accel_bias_body[0] >> 24) & 0xFF);                                 /* set reg 0 */
-    regs[1] = (uint8_t)((accel_bias_body[0] >> 16) & 0xFF);                                 /* set reg 1 */
-    regs[2] = (uint8_t)((accel_bias_body[0] >> 8) & 0xFF);                                  /* set reg 2 */
-    regs[3] = (uint8_t)(accel_bias_body[0] & 0xFF);                                         /* set reg 3 */
-    regs[4] = (uint8_t)((accel_bias_body[1] >> 24) & 0xFF);                                 /* set reg 4 */
-    regs[5] = (uint8_t)((accel_bias_body[1] >> 16) & 0xFF);                                 /* set reg 5 */
-    regs[6] = (uint8_t)((accel_bias_body[1] >> 8) & 0xFF);                                  /* set reg 6 */
-    regs[7] = (uint8_t)(accel_bias_body[1] & 0xFF);                                         /* set reg 7 */
-    regs[8] = (uint8_t)((accel_bias_body[2] >> 24) & 0xFF);                                 /* set reg 8 */
-    regs[9] = (uint8_t)((accel_bias_body[2] >> 16) & 0xFF);                                 /* set reg 9 */
-    regs[10] = (uint8_t)((accel_bias_body[2] >> 8) & 0xFF);                                 /* set reg 10 */
-    regs[11] = (uint8_t)(accel_bias_body[2] & 0xFF);                                        /* set reg 11 */
+    accel_bias_body[0] = (int32_t) (((int64_t) accel_bias_body[0] * accel_sf) >> 30);         /* set the bias body 0 */
+    accel_bias_body[1] = (int32_t) (((int64_t) accel_bias_body[1] * accel_sf) >> 30);         /* set the bias body 1 */
+    accel_bias_body[2] = (int32_t) (((int64_t) accel_bias_body[2] * accel_sf) >> 30);         /* set the bias body 2 */
+    regs[0] = (uint8_t) ((accel_bias_body[0] >> 24) & 0xFF);                                 /* set reg 0 */
+    regs[1] = (uint8_t) ((accel_bias_body[0] >> 16) & 0xFF);                                 /* set reg 1 */
+    regs[2] = (uint8_t) ((accel_bias_body[0] >> 8) & 0xFF);                                  /* set reg 2 */
+    regs[3] = (uint8_t) (accel_bias_body[0] & 0xFF);                                         /* set reg 3 */
+    regs[4] = (uint8_t) ((accel_bias_body[1] >> 24) & 0xFF);                                 /* set reg 4 */
+    regs[5] = (uint8_t) ((accel_bias_body[1] >> 16) & 0xFF);                                 /* set reg 5 */
+    regs[6] = (uint8_t) ((accel_bias_body[1] >> 8) & 0xFF);                                  /* set reg 6 */
+    regs[7] = (uint8_t) (accel_bias_body[1] & 0xFF);                                         /* set reg 7 */
+    regs[8] = (uint8_t) ((accel_bias_body[2] >> 24) & 0xFF);                                 /* set reg 8 */
+    regs[9] = (uint8_t) ((accel_bias_body[2] >> 16) & 0xFF);                                 /* set reg 9 */
+    regs[10] = (uint8_t) ((accel_bias_body[2] >> 8) & 0xFF);                                 /* set reg 10 */
+    regs[11] = (uint8_t) (accel_bias_body[2] & 0xFF);                                        /* set reg 11 */
     res = a_mpu9250_write_mem(handle, MPU9250_DMP_D_ACCEL_BIAS, (uint8_t *) regs, 12);       /* write data */
     if (res != 0)                                                                           /* check result */
     {
@@ -2491,10 +2494,10 @@ uint8_t mpu9250_dmp_set_feature(mpu9250_handle_t *handle, uint16_t mask) {
         return 4;                                                                        /* return error */
     }
 
-    tmp[0] = (uint8_t)((MPU9250_DMP_GYRO_SF >> 24) & 0xFF);                              /* set the param 0 */
-    tmp[1] = (uint8_t)((MPU9250_DMP_GYRO_SF >> 16) & 0xFF);                              /* set the param 1 */
-    tmp[2] = (uint8_t)((MPU9250_DMP_GYRO_SF >> 8) & 0xFF);                               /* set the param 2 */
-    tmp[3] = (uint8_t)(MPU9250_DMP_GYRO_SF & 0xFF);                                      /* set the param 3 */
+    tmp[0] = (uint8_t) ((MPU9250_DMP_GYRO_SF >> 24) & 0xFF);                              /* set the param 0 */
+    tmp[1] = (uint8_t) ((MPU9250_DMP_GYRO_SF >> 16) & 0xFF);                              /* set the param 1 */
+    tmp[2] = (uint8_t) ((MPU9250_DMP_GYRO_SF >> 8) & 0xFF);                               /* set the param 2 */
+    tmp[3] = (uint8_t) (MPU9250_DMP_GYRO_SF & 0xFF);                                      /* set the param 3 */
     res = a_mpu9250_write_mem(handle, MPU9250_DMP_D_0_104, tmp, 4);                      /* write data */
     if (res != 0)                                                                        /* check result */
     {
@@ -2616,7 +2619,7 @@ uint8_t mpu9250_dmp_set_feature(mpu9250_handle_t *handle, uint16_t mask) {
         }
 
         scaled_thresh = (float) MPU9250_DMP_TAP_THRESH / MPU9250_DMP_SAMPLE_RATE;         /* get the scaled thresh */
-        res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t * ) & prev,
+        res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t *) &prev,
                              1);     /* read accelerometer config */
         if (res != 0)                                                                    /* check result */
         {
@@ -2628,25 +2631,25 @@ uint8_t mpu9250_dmp_set_feature(mpu9250_handle_t *handle, uint16_t mask) {
         range = ((prev >> 3) & 0x3);                                                     /* get the range */
         if (range == 0)                                                                  /* if 2g */
         {
-            dmp_thresh = (uint16_t)(scaled_thresh * 16384);                              /* set dmp thresh */
-            dmp_thresh_2 = (uint16_t)(scaled_thresh * 12288);                            /* set dmp thresh2 */
+            dmp_thresh = (uint16_t) (scaled_thresh * 16384);                              /* set dmp thresh */
+            dmp_thresh_2 = (uint16_t) (scaled_thresh * 12288);                            /* set dmp thresh2 */
         } else if (range == 1)                                                             /* if 4g */
         {
-            dmp_thresh = (uint16_t)(scaled_thresh * 8192);                               /* set dmp thresh */
-            dmp_thresh_2 = (uint16_t)(scaled_thresh * 6144);                             /* set dmp thresh2 */
+            dmp_thresh = (uint16_t) (scaled_thresh * 8192);                               /* set dmp thresh */
+            dmp_thresh_2 = (uint16_t) (scaled_thresh * 6144);                             /* set dmp thresh2 */
         } else if (range == 2)                                                             /* if 8g */
         {
-            dmp_thresh = (uint16_t)(scaled_thresh * 4096);                               /* set dmp thresh */
-            dmp_thresh_2 = (uint16_t)(scaled_thresh * 3072);                             /* set dmp thresh2 */
+            dmp_thresh = (uint16_t) (scaled_thresh * 4096);                               /* set dmp thresh */
+            dmp_thresh_2 = (uint16_t) (scaled_thresh * 3072);                             /* set dmp thresh2 */
         } else                                                                             /* if 16g */
         {
-            dmp_thresh = (uint16_t)(scaled_thresh * 2048);                               /* set dmp thresh */
-            dmp_thresh_2 = (uint16_t)(scaled_thresh * 1536);                             /* set dmp thresh2 */
+            dmp_thresh = (uint16_t) (scaled_thresh * 2048);                               /* set dmp thresh */
+            dmp_thresh_2 = (uint16_t) (scaled_thresh * 1536);                             /* set dmp thresh2 */
         }
-        tmp[0] = (uint8_t)(dmp_thresh >> 8);                                             /* set part 0 */
-        tmp[1] = (uint8_t)(dmp_thresh & 0xFF);                                           /* set part 1 */
-        tmp[2] = (uint8_t)(dmp_thresh_2 >> 8);                                           /* set part 2 */
-        tmp[3] = (uint8_t)(dmp_thresh_2 & 0xFF);                                         /* set part 3 */
+        tmp[0] = (uint8_t) (dmp_thresh >> 8);                                             /* set part 0 */
+        tmp[1] = (uint8_t) (dmp_thresh & 0xFF);                                           /* set part 1 */
+        tmp[2] = (uint8_t) (dmp_thresh_2 >> 8);                                           /* set part 2 */
+        tmp[3] = (uint8_t) (dmp_thresh_2 & 0xFF);                                         /* set part 3 */
 
         res = a_mpu9250_write_mem(handle, MPU9250_DMP_TAP_THX, tmp, 2);                  /* write tap threshold x */
         if (res != 0)                                                                    /* check result */
@@ -2739,10 +2742,10 @@ uint8_t mpu9250_dmp_set_feature(mpu9250_handle_t *handle, uint16_t mask) {
 
         dps = MPU9250_DMP_SHAKE_REJECT_THRESH;                                           /* set the shake reject thresh */
         thresh_scaled = MPU9250_DMP_GYRO_SF / 1000 * dps;                                /* convert to thresh scaled */
-        tmp[0] = (uint8_t)(((uint32_t) thresh_scaled >> 24) & 0xFF);                      /* set the part 3 */
-        tmp[1] = (uint8_t)(((uint32_t) thresh_scaled >> 16) & 0xFF);                      /* set the part 2 */
-        tmp[2] = (uint8_t)(((uint32_t) thresh_scaled >> 8) & 0xFF);                       /* set the part 1 */
-        tmp[3] = (uint8_t)((uint32_t) thresh_scaled & 0xFF);                              /* set the part 0 */
+        tmp[0] = (uint8_t) (((uint32_t) thresh_scaled >> 24) & 0xFF);                      /* set the part 3 */
+        tmp[1] = (uint8_t) (((uint32_t) thresh_scaled >> 16) & 0xFF);                      /* set the part 2 */
+        tmp[2] = (uint8_t) (((uint32_t) thresh_scaled >> 8) & 0xFF);                       /* set the part 1 */
+        tmp[3] = (uint8_t) ((uint32_t) thresh_scaled & 0xFF);                              /* set the part 0 */
 
         res = a_mpu9250_write_mem(handle, MPU9250_DMP_D_1_92, tmp, 4);                   /* write data */
         if (res != 0)                                                                    /* check result */
@@ -2925,8 +2928,8 @@ uint8_t mpu9250_dmp_set_fifo_rate(mpu9250_handle_t *handle, uint16_t rate) {
     }
 
     d = MPU9250_DMP_SAMPLE_RATE / rate - 1;                                    /* set div */
-    tmp[0] = (uint8_t)((d >> 8) & 0xFF);                                       /* set tmp part0 */
-    tmp[1] = (uint8_t)(d & 0xFF);                                              /* set tmp part1 */
+    tmp[0] = (uint8_t) ((d >> 8) & 0xFF);                                       /* set tmp part0 */
+    tmp[1] = (uint8_t) (d & 0xFF);                                              /* set tmp part1 */
 
     res = a_mpu9250_write_mem(handle, MPU9250_DMP_D_0_22, tmp, 2);             /* write data */
     if (res != 0)                                                              /* check result */
@@ -3032,7 +3035,7 @@ uint8_t mpu9250_dmp_set_tap_axes(mpu9250_handle_t *handle, mpu9250_axis_t axis, 
 
         return 1;                                                              /* return error */
     }
-    pos = (uint8_t)((axis - 5) * 2);                                           /* get the pos */
+    pos = (uint8_t) ((axis - 5) * 2);                                           /* get the pos */
     if (enable == MPU9250_BOOL_TRUE)                                           /* if enable */
     {
         tmp |= (3 << pos);                                                     /* enable */
@@ -3090,7 +3093,7 @@ uint8_t mpu9250_dmp_get_tap_axes(mpu9250_handle_t *handle, mpu9250_axis_t axis, 
 
         return 1;                                                              /* return error */
     }
-    pos = (uint8_t)((axis - 5) * 2);                                           /* get the pos */
+    pos = (uint8_t) ((axis - 5) * 2);                                           /* get the pos */
     if (((tmp >> pos) & 0x3) == 0x3)                                           /* if enable */
     {
         *enable = MPU9250_BOOL_TRUE;                                           /* set enable */
@@ -3148,7 +3151,7 @@ uint8_t mpu9250_dmp_set_tap_thresh(mpu9250_handle_t *handle, mpu9250_axis_t axis
 
     scaled_thresh = (float) mg_ms / MPU9250_DMP_SAMPLE_RATE;                    /* get the scaled thresh */
     res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG,
-                         (uint8_t * ) & prev, 1);                                  /* read accelerometer config */
+                         (uint8_t *) &prev, 1);                                  /* read accelerometer config */
     if (res != 0)                                                              /* check result */
     {
         handle->debug_print("mpu9250: read accelerometer config failed.\n");   /* read accelerometer config failed */
@@ -3158,25 +3161,25 @@ uint8_t mpu9250_dmp_set_tap_thresh(mpu9250_handle_t *handle, mpu9250_axis_t axis
     range = ((prev >> 3) & 0x3);                                               /* get the range */
     if (range == 0)                                                            /* if 2g */
     {
-        dmp_thresh = (uint16_t)(scaled_thresh * 16384);                        /* set dmp thresh */
-        dmp_thresh_2 = (uint16_t)(scaled_thresh * 12288);                      /* set dmp thresh2 */
+        dmp_thresh = (uint16_t) (scaled_thresh * 16384);                        /* set dmp thresh */
+        dmp_thresh_2 = (uint16_t) (scaled_thresh * 12288);                      /* set dmp thresh2 */
     } else if (range == 1)                                                       /* if 4g */
     {
-        dmp_thresh = (uint16_t)(scaled_thresh * 8192);                         /* set dmp thresh */
-        dmp_thresh_2 = (uint16_t)(scaled_thresh * 6144);                       /* set dmp thresh2 */
+        dmp_thresh = (uint16_t) (scaled_thresh * 8192);                         /* set dmp thresh */
+        dmp_thresh_2 = (uint16_t) (scaled_thresh * 6144);                       /* set dmp thresh2 */
     } else if (range == 2)                                                       /* if 8g */
     {
-        dmp_thresh = (uint16_t)(scaled_thresh * 4096);                         /* set dmp thresh */
-        dmp_thresh_2 = (uint16_t)(scaled_thresh * 3072);                       /* set dmp thresh2 */
+        dmp_thresh = (uint16_t) (scaled_thresh * 4096);                         /* set dmp thresh */
+        dmp_thresh_2 = (uint16_t) (scaled_thresh * 3072);                       /* set dmp thresh2 */
     } else                                                                       /* if 16g */
     {
-        dmp_thresh = (uint16_t)(scaled_thresh * 2048);                         /* set dmp thresh */
-        dmp_thresh_2 = (uint16_t)(scaled_thresh * 1536);                       /* set dmp thresh2 */
+        dmp_thresh = (uint16_t) (scaled_thresh * 2048);                         /* set dmp thresh */
+        dmp_thresh_2 = (uint16_t) (scaled_thresh * 1536);                       /* set dmp thresh2 */
     }
-    tmp[0] = (uint8_t)(dmp_thresh >> 8);                                       /* set part 0 */
-    tmp[1] = (uint8_t)(dmp_thresh & 0xFF);                                     /* set part 1 */
-    tmp[2] = (uint8_t)(dmp_thresh_2 >> 8);                                     /* set part 2 */
-    tmp[3] = (uint8_t)(dmp_thresh_2 & 0xFF);                                   /* set part 3 */
+    tmp[0] = (uint8_t) (dmp_thresh >> 8);                                       /* set part 0 */
+    tmp[1] = (uint8_t) (dmp_thresh & 0xFF);                                     /* set part 1 */
+    tmp[2] = (uint8_t) (dmp_thresh_2 >> 8);                                     /* set part 2 */
+    tmp[3] = (uint8_t) (dmp_thresh_2 & 0xFF);                                   /* set part 3 */
 
     if (axis == MPU9250_AXIS_X)                                                /* if axis x */
     {
@@ -3311,7 +3314,7 @@ uint8_t mpu9250_dmp_get_tap_thresh(mpu9250_handle_t *handle, mpu9250_axis_t axis
     dmp_thresh = (uint16_t) tmp[0] << 8 | tmp[1];                               /* set the dmp thresh */
 
     res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG,
-                         (uint8_t * ) & prev, 1);                                  /* read accelerometer config */
+                         (uint8_t *) &prev, 1);                                  /* read accelerometer config */
     if (res != 0)                                                              /* check result */
     {
         handle->debug_print("mpu9250: read accelerometer config failed.\n");   /* read accelerometer config failed */
@@ -3332,7 +3335,7 @@ uint8_t mpu9250_dmp_get_tap_thresh(mpu9250_handle_t *handle, mpu9250_axis_t axis
     {
         scaled_thresh = dmp_thresh / 2048.0f;                                  /* set dmp thresh */
     }
-    *mg_ms = (uint16_t)(scaled_thresh * MPU9250_DMP_SAMPLE_RATE);              /* set the mg/ms */
+    *mg_ms = (uint16_t) (scaled_thresh * MPU9250_DMP_SAMPLE_RATE);              /* set the mg/ms */
 
     return 0;                                                                  /* success return 0 */
 }
@@ -3395,7 +3398,7 @@ uint8_t mpu9250_dmp_read(mpu9250_handle_t *handle,
         return 4;                                                                                                         /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_INT_STATUS, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_INT_STATUS, (uint8_t *) &prev,
                          1);                                            /* read config */
     if (res !=
         0)                                                                                                         /* check result */
@@ -3456,8 +3459,8 @@ uint8_t mpu9250_dmp_read(mpu9250_handle_t *handle,
 
         return 1;                                                                                                         /* return error */
     }
-    count = (uint16_t)(((uint16_t) buf[0] << 8) |
-                       buf[1]);                                                                 /* set count */
+    count = (uint16_t) (((uint16_t) buf[0] << 8) |
+                        buf[1]);                                                                 /* set count */
     count = (count < 1024) ? count
                            : 1024;                                                                                /* just the counter */
     count = (count < (*l) * len) ? count : ((*l) *
@@ -3568,7 +3571,7 @@ uint8_t mpu9250_dmp_read(mpu9250_handle_t *handle,
                               handle->buf[i + 5 + len * j];                /* set the accel z raw data */
             i += 6;                                                                                                       /* size += 6 */
 
-            res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t * ) & accel_conf,
+            res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t *) &accel_conf,
                                  1);                            /* read accel config */
             if (res !=
                 0)                                                                                                 /* check result */
@@ -3637,7 +3640,7 @@ uint8_t mpu9250_dmp_read(mpu9250_handle_t *handle,
                              handle->buf[i + 5 + len * j];                 /* set the gyro z raw data */
             i += 6;                                                                                                       /* size += 6 */
 
-            res = a_mpu9250_read(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t * ) & gyro_conf,
+            res = a_mpu9250_read(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t *) &gyro_conf,
                                  1);                              /* read gyro config */
             if (res !=
                 0)                                                                                                 /* check result */
@@ -3802,7 +3805,7 @@ uint8_t mpu9250_dmp_set_enable(mpu9250_handle_t *handle, mpu9250_bool_t enable) 
         return 4;                                                                        /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);            /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);            /* read config */
     if (res != 0)                                                                        /* check result */
     {
         handle->debug_print("mpu9250: read user ctrl failed.\n");                        /* read user ctrl failed */
@@ -3811,7 +3814,7 @@ uint8_t mpu9250_dmp_set_enable(mpu9250_handle_t *handle, mpu9250_bool_t enable) 
     }
     prev &= ~(1 << 7);                                                                   /* clear config */
     prev |= enable << 7;                                                                 /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);           /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);           /* write config */
     if (res != 0)                                                                        /* check result */
     {
         handle->debug_print("mpu9250: write user ctrl failed.\n");                       /* write user ctrl failed */
@@ -3862,7 +3865,7 @@ uint8_t mpu9250_dmp_gyro_accel_raw_offset_convert(mpu9250_handle_t *handle,
         return 4;                                                                                 /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t * ) & accel_conf,
+    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t *) &accel_conf,
                          1);            /* read accel config */
     if (res != 0)                                                                                 /* check result */
     {
@@ -3871,7 +3874,7 @@ uint8_t mpu9250_dmp_gyro_accel_raw_offset_convert(mpu9250_handle_t *handle,
 
         return 1;                                                                                 /* return error */
     }
-    res = a_mpu9250_read(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t * ) & gyro_conf,
+    res = a_mpu9250_read(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t *) &gyro_conf,
                          1);              /* read gyro config */
     if (res != 0)                                                                                 /* check result */
     {
@@ -3886,68 +3889,68 @@ uint8_t mpu9250_dmp_gyro_accel_raw_offset_convert(mpu9250_handle_t *handle,
             (gyro_conf >> 3) & 0x3;                                                           /* get the gyro conf */
     if (accel_conf == 0)                                                                          /* ±2g */
     {
-        accel_offset[0] = (int32_t)(
+        accel_offset[0] = (int32_t) (
                 accel_offset_raw[0] * 16384.0f);                              /* set accel offset 0 */
-        accel_offset[1] = (int32_t)(
+        accel_offset[1] = (int32_t) (
                 accel_offset_raw[1] * 16384.0f);                              /* set accel offset 1 */
-        accel_offset[2] = (int32_t)(
+        accel_offset[2] = (int32_t) (
                 accel_offset_raw[2] * 16384.0f);                              /* set accel offset 2 */
     } else if (accel_conf == 1)                                                                     /* ±4g */
     {
-        accel_offset[0] = (int32_t)(
+        accel_offset[0] = (int32_t) (
                 accel_offset_raw[0] * 8192.0f);                               /* set accel offset 0 */
-        accel_offset[1] = (int32_t)(
+        accel_offset[1] = (int32_t) (
                 accel_offset_raw[1] * 8192.0f);                               /* set accel offset 1 */
-        accel_offset[2] = (int32_t)(
+        accel_offset[2] = (int32_t) (
                 accel_offset_raw[2] * 8192.0f);                               /* set accel offset 2 */
     } else if (accel_conf == 2)                                                                     /* ±8g */
     {
-        accel_offset[0] = (int32_t)(
+        accel_offset[0] = (int32_t) (
                 accel_offset_raw[0] * 4096.0f);                               /* set accel offset 0 */
-        accel_offset[1] = (int32_t)(
+        accel_offset[1] = (int32_t) (
                 accel_offset_raw[1] * 4096.0f);                               /* set accel offset 1 */
-        accel_offset[2] = (int32_t)(
+        accel_offset[2] = (int32_t) (
                 accel_offset_raw[2] * 4096.0f);                               /* set accel offset 2 */
     } else                                                                                          /* ±16g */
     {
-        accel_offset[0] = (int32_t)(
+        accel_offset[0] = (int32_t) (
                 accel_offset_raw[0] * 2048.0f);                               /* set accel offset 0 */
-        accel_offset[1] = (int32_t)(
+        accel_offset[1] = (int32_t) (
                 accel_offset_raw[1] * 2048.0f);                               /* set accel offset 1 */
-        accel_offset[2] = (int32_t)(
+        accel_offset[2] = (int32_t) (
                 accel_offset_raw[2] * 2048.0f);                               /* set accel offset 2 */
     }
     if (gyro_conf == 0)                                                                           /* ±250dps */
     {
-        gyro_offset[0] = (int32_t)(
+        gyro_offset[0] = (int32_t) (
                 gyro_offset_raw[0] * 131.f);                                   /* set gyro offset 0 */
-        gyro_offset[1] = (int32_t)(
+        gyro_offset[1] = (int32_t) (
                 gyro_offset_raw[1] * 131.f);                                   /* set gyro offset 1 */
-        gyro_offset[2] = (int32_t)(
+        gyro_offset[2] = (int32_t) (
                 gyro_offset_raw[2] * 131.f);                                   /* set gyro offset 2 */
     } else if (gyro_conf == 1)                                                                      /* ±500dps */
     {
-        gyro_offset[0] = (int32_t)(
+        gyro_offset[0] = (int32_t) (
                 gyro_offset_raw[0] * 65.5f);                                   /* set gyro offset 0 */
-        gyro_offset[1] = (int32_t)(
+        gyro_offset[1] = (int32_t) (
                 gyro_offset_raw[1] * 65.5f);                                   /* set gyro offset 1 */
-        gyro_offset[2] = (int32_t)(
+        gyro_offset[2] = (int32_t) (
                 gyro_offset_raw[2] * 65.5f);                                   /* set gyro offset 2 */
     } else if (gyro_conf == 2)                                                                      /* ±1000dps */
     {
-        gyro_offset[0] = (int32_t)(
+        gyro_offset[0] = (int32_t) (
                 gyro_offset_raw[0] * 32.8f);                                   /* set gyro offset 0 */
-        gyro_offset[1] = (int32_t)(
+        gyro_offset[1] = (int32_t) (
                 gyro_offset_raw[1] * 32.8f);                                   /* set gyro offset 1 */
-        gyro_offset[2] = (int32_t)(
+        gyro_offset[2] = (int32_t) (
                 gyro_offset_raw[2] * 32.8f);                                   /* set gyro offset 2 */
     } else                                                                                          /* ±2000dps */
     {
-        gyro_offset[0] = (int32_t)(
+        gyro_offset[0] = (int32_t) (
                 gyro_offset_raw[0] * 16.4f);                                   /* set gyro offset 0 */
-        gyro_offset[1] = (int32_t)(
+        gyro_offset[1] = (int32_t) (
                 gyro_offset_raw[1] * 16.4f);                                   /* set gyro offset 1 */
-        gyro_offset[2] = (int32_t)(
+        gyro_offset[2] = (int32_t) (
                 gyro_offset_raw[2] * 16.4f);                                   /* set gyro offset 2 */
     }
 
@@ -4054,64 +4057,76 @@ uint8_t mpu9250_init(mpu9250_handle_t *handle) {
     {
         return 2;                                                                   /* return error */
     }
+    handle->debug_print("mpu9250: 1\n");
     if (handle->debug_print == NULL)                                                /* check debug_print */
     {
         return 3;                                                                   /* return error */
     }
+    handle->debug_print("mpu9250: 2\n");
     if (handle->iic_init == NULL)                                                   /* check iic_init */
     {
         handle->debug_print("mpu9250: iic_init is null.\n");                        /* iic_init is null */
 
         return 3;                                                                   /* return error */
     }
+    handle->debug_print("mpu9250: 3\n");
     if (handle->iic_deinit == NULL)                                                 /* check iic_deinit */
     {
         handle->debug_print("mpu9250: iic_deinit is null.\n");                      /* iic_deinit is null */
 
         return 3;                                                                   /* return error */
     }
+    handle->debug_print("mpu9250: 4\n");
     if (handle->iic_read == NULL)                                                   /* check iic_read */
     {
         handle->debug_print("mpu9250: iic_read is null.\n");                        /* iic_read is null */
 
         return 3;                                                                   /* return error */
     }
+    handle->debug_print("mpu9250: 5\n");
     if (handle->iic_write == NULL)                                                  /* check iic_write */
     {
         handle->debug_print("mpu9250: iic_write is null.\n");                       /* iic_write is null */
 
         return 3;                                                                   /* return error */
     }
+    handle->debug_print("mpu9250: 6\n");
+
     if (handle->spi_init == NULL)                                                   /* check spi_init */
     {
         handle->debug_print("mpu9250: spi_init is null.\n");                        /* spi_init is null */
 
         return 3;                                                                   /* return error */
     }
+    handle->debug_print("mpu9250: 7\n");
     if (handle->spi_deinit == NULL)                                                 /* check spi_deinit */
     {
         handle->debug_print("mpu9250: spi_deinit is null.\n");                      /* spi_deinit is null */
 
         return 3;                                                                   /* return error */
     }
+    handle->debug_print("mpu9250: 8\n");
     if (handle->spi_read == NULL)                                                   /* check spi_read */
     {
         handle->debug_print("mpu9250: spi_read is null.\n");                        /* spi_read is null */
 
         return 3;                                                                   /* return error */
     }
+    handle->debug_print("mpu9250: 9\n");
     if (handle->spi_write == NULL)                                                  /* check spi_write */
     {
         handle->debug_print("mpu9250: spi_write is null.\n");                       /* spi_write is null */
 
         return 3;                                                                   /* return error */
     }
+    handle->debug_print("mpu9250: 10\n");
     if (handle->delay_ms == NULL)                                                   /* check delay_ms */
     {
         handle->debug_print("mpu9250: delay_ms is null.\n");                        /* delay_ms is null */
 
         return 3;                                                                   /* return error */
     }
+    handle->debug_print("mpu9250: 11\n");
     if (handle->receive_callback == NULL)                                           /* check receive_callback */
     {
         handle->debug_print("mpu9250: receive_callback is null.\n");                /* receive_callback is null */
@@ -4128,17 +4143,19 @@ uint8_t mpu9250_init(mpu9250_handle_t *handle) {
 
             return 1;                                                               /* return error */
         }
-    } else                                                                            /* if spi interface */
-    {
-        res = handle->spi_init();                                                   /* spi init */
-        if (res != 0)                                                               /* check the result */
-        {
-            handle->debug_print("mpu9250: spi init failed.\n");                     /* spi init failed */
-
-            return 1;                                                               /* return error */
-        }
+        handle->debug_print("mpu9250: 12\n");
     }
-
+//    } else                                                                            /* if spi interface */
+//    {
+//        res = handle->spi_init();                                                   /* spi init */
+//        if (res != 0)                                                               /* check the result */
+//        {
+//            handle->debug_print("mpu9250: spi init failed.\n");                     /* spi init failed */
+//
+//            return 1;                                                               /* return error */
+//        }
+//    }
+    handle->debug_print("mpu9250: read who am i...\n");
     res = a_mpu9250_read(handle, MPU9250_REG_WHO_AM_I, &prev, 1);                   /* read who am I */
     if (res != 0)                                                                   /* check the result */
     {
@@ -4147,6 +4164,7 @@ uint8_t mpu9250_init(mpu9250_handle_t *handle) {
 
         return 5;                                                                   /* return error */
     }
+    handle->debug_print("mpu9250: 13\n");
     if (prev != 0x71)                                                               /* check the id */
     {
         handle->debug_print("mpu9250: id is invalid.\n");                           /* id is invalid */
@@ -4154,7 +4172,7 @@ uint8_t mpu9250_init(mpu9250_handle_t *handle) {
 
         return 5;                                                                   /* return error */
     }
-
+    handle->debug_print("mpu9250: 14\n");
     prev = 1 << 7;                                                                  /* reset the device */
     res = a_mpu9250_write(handle, MPU9250_REG_PWR_MGMT_1, &prev, 1);                /* write pwr mgmt 1 */
     if (res != 0)                                                                   /* check the result */
@@ -4164,10 +4182,13 @@ uint8_t mpu9250_init(mpu9250_handle_t *handle) {
 
         return 4;                                                                   /* return error */
     }
+    handle->debug_print("mpu9250: 15\n");
+    handle->debug_print("mpu9250: delay 10\n");
     handle->delay_ms(10);                                                           /* delay 10 ms */
     timeout = 100;                                                                  /* set the timeout 1000 ms */
     while (timeout != 0)                                                            /* check the timeout */
     {
+        handle->debug_print("mpu9250: read pwr\n");
         res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, &prev, 1);             /* read pwr mgmt 1 */
         if (res != 0)                                                               /* check the result */
         {
@@ -4183,6 +4204,7 @@ uint8_t mpu9250_init(mpu9250_handle_t *handle) {
 
             return 0;                                                               /* success return 0 */
         }
+        handle->debug_print("mpu9250: delay 10\n");
         handle->delay_ms(10);                                                       /* delay 10 ms */
         timeout--;                                                                  /* timeout-- */
     }
@@ -4291,7 +4313,7 @@ uint8_t mpu9250_read(mpu9250_handle_t *handle,
         return 5;                                                                                  /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);                      /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);                      /* read config */
     if (res != 0)                                                                                  /* check result */
     {
         handle->debug_print(
@@ -4299,7 +4321,7 @@ uint8_t mpu9250_read(mpu9250_handle_t *handle,
 
         return 1;                                                                                  /* return error */
     }
-    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t * ) & accel_conf,
+    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t *) &accel_conf,
                          1);             /* read accel config */
     if (res != 0)                                                                                  /* check result */
     {
@@ -4308,7 +4330,7 @@ uint8_t mpu9250_read(mpu9250_handle_t *handle,
 
         return 1;                                                                                  /* return error */
     }
-    res = a_mpu9250_read(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t * ) & gyro_conf,
+    res = a_mpu9250_read(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t *) &gyro_conf,
                          1);               /* read gyro config */
     if (res != 0)                                                                                  /* check result */
     {
@@ -4328,7 +4350,7 @@ uint8_t mpu9250_read(mpu9250_handle_t *handle,
         uint16_t count;
         uint16_t i;
 
-        res = a_mpu9250_read(handle, MPU9250_REG_FIFO_EN, (uint8_t * ) & conf,
+        res = a_mpu9250_read(handle, MPU9250_REG_FIFO_EN, (uint8_t *) &conf,
                              1);                    /* read fifo enable */
         if (res != 0)                                                                              /* check result */
         {
@@ -4358,7 +4380,7 @@ uint8_t mpu9250_read(mpu9250_handle_t *handle,
         if (conf ==
             0x78)                                                                          /* only acc and gyro */
         {
-            count = (uint16_t)(((uint16_t) buf[0] << 8) | buf[1]);                                  /* set count */
+            count = (uint16_t) (((uint16_t) buf[0] << 8) | buf[1]);                                  /* set count */
             count = (count < 1024) ? count
                                    : 1024;                                                 /* just the counter */
             count = (count < ((*len) * 12)) ? count : ((*len) *
@@ -4375,17 +4397,17 @@ uint8_t mpu9250_read(mpu9250_handle_t *handle,
             }
             for (i = 0; i < (*len); i++)                                                           /* *len times */
             {
-                accel_raw[i][0] = (int16_t)((uint16_t) handle->buf[i * 12 + 0] << 8) |
+                accel_raw[i][0] = (int16_t) ((uint16_t) handle->buf[i * 12 + 0] << 8) |
                                   handle->buf[i * 12 + 1];                              /* set raw accel x */
-                accel_raw[i][1] = (int16_t)((uint16_t) handle->buf[i * 12 + 2] << 8) |
+                accel_raw[i][1] = (int16_t) ((uint16_t) handle->buf[i * 12 + 2] << 8) |
                                   handle->buf[i * 12 + 3];                              /* set raw accel y */
-                accel_raw[i][2] = (int16_t)((uint16_t) handle->buf[i * 12 + 4] << 8) |
+                accel_raw[i][2] = (int16_t) ((uint16_t) handle->buf[i * 12 + 4] << 8) |
                                   handle->buf[i * 12 + 5];                              /* set raw accel z */
-                gyro_raw[i][0] = (int16_t)((uint16_t) handle->buf[i * 12 + 6] << 8) |
+                gyro_raw[i][0] = (int16_t) ((uint16_t) handle->buf[i * 12 + 6] << 8) |
                                  handle->buf[i * 12 + 7];                               /* set raw gyro x */
-                gyro_raw[i][1] = (int16_t)((uint16_t) handle->buf[i * 12 + 8] << 8) |
+                gyro_raw[i][1] = (int16_t) ((uint16_t) handle->buf[i * 12 + 8] << 8) |
                                  handle->buf[i * 12 + 9];                               /* set raw gyro y */
-                gyro_raw[i][2] = (int16_t)((uint16_t) handle->buf[i * 12 + 10] << 8) |
+                gyro_raw[i][2] = (int16_t) ((uint16_t) handle->buf[i * 12 + 10] << 8) |
                                  handle->buf[i * 12 + 11];                              /* set raw gyro z */
                 mag_raw[i][0] = 0;                                                                 /* set 0 */
                 mag_raw[i][1] = 0;                                                                 /* set 0 */
@@ -4446,7 +4468,7 @@ uint8_t mpu9250_read(mpu9250_handle_t *handle,
             float mag_k_y;
             float mag_k_z;
 
-            count = (uint16_t)(((uint16_t) buf[0] << 8) | buf[1]);                                  /* set count */
+            count = (uint16_t) (((uint16_t) buf[0] << 8) | buf[1]);                                  /* set count */
             count = (count < 1024) ? count
                                    : 1024;                                                 /* just the counter */
             count = (count < ((*len) * 20)) ? count : ((*len) *
@@ -4471,23 +4493,23 @@ uint8_t mpu9250_read(mpu9250_handle_t *handle,
 
             for (i = 0; i < (*len); i++)                                                           /* *len times */
             {
-                accel_raw[i][0] = (int16_t)((uint16_t) handle->buf[i * 20 + 0] << 8) |
+                accel_raw[i][0] = (int16_t) ((uint16_t) handle->buf[i * 20 + 0] << 8) |
                                   handle->buf[i * 20 + 1];                              /* set raw accel x */
-                accel_raw[i][1] = (int16_t)((uint16_t) handle->buf[i * 20 + 2] << 8) |
+                accel_raw[i][1] = (int16_t) ((uint16_t) handle->buf[i * 20 + 2] << 8) |
                                   handle->buf[i * 20 + 3];                              /* set raw accel y */
-                accel_raw[i][2] = (int16_t)((uint16_t) handle->buf[i * 20 + 4] << 8) |
+                accel_raw[i][2] = (int16_t) ((uint16_t) handle->buf[i * 20 + 4] << 8) |
                                   handle->buf[i * 20 + 5];                              /* set raw accel z */
-                gyro_raw[i][0] = (int16_t)((uint16_t) handle->buf[i * 20 + 6] << 8) |
+                gyro_raw[i][0] = (int16_t) ((uint16_t) handle->buf[i * 20 + 6] << 8) |
                                  handle->buf[i * 20 + 7];                               /* set raw gyro x */
-                gyro_raw[i][1] = (int16_t)((uint16_t) handle->buf[i * 20 + 8] << 8) |
+                gyro_raw[i][1] = (int16_t) ((uint16_t) handle->buf[i * 20 + 8] << 8) |
                                  handle->buf[i * 20 + 9];                               /* set raw gyro y */
-                gyro_raw[i][2] = (int16_t)((uint16_t) handle->buf[i * 20 + 10] << 8) |
+                gyro_raw[i][2] = (int16_t) ((uint16_t) handle->buf[i * 20 + 10] << 8) |
                                  handle->buf[i * 20 + 11];                              /* set raw gyro z */
-                mag_raw[i][0] = (int16_t)((uint16_t) handle->buf[i * 20 + 14] << 8) |
+                mag_raw[i][0] = (int16_t) ((uint16_t) handle->buf[i * 20 + 14] << 8) |
                                 handle->buf[i * 20 + 13];                               /* set raw mag x */
-                mag_raw[i][1] = (int16_t)((uint16_t) handle->buf[i * 20 + 16] << 8) |
+                mag_raw[i][1] = (int16_t) ((uint16_t) handle->buf[i * 20 + 16] << 8) |
                                 handle->buf[i * 20 + 15];                               /* set raw mag y */
-                mag_raw[i][2] = (int16_t)((uint16_t) handle->buf[i * 20 + 18] << 8) |
+                mag_raw[i][2] = (int16_t) ((uint16_t) handle->buf[i * 20 + 18] << 8) |
                                 handle->buf[i * 20 + 17];                               /* set raw mag z */
 
                 if (accel_conf == 0)                                                               /* ±2g */
@@ -4559,14 +4581,17 @@ uint8_t mpu9250_read(mpu9250_handle_t *handle,
             return 1;                                                                              /* return error */
         }
         accel_raw[0][0] =
-                (int16_t)((uint16_t) handle->buf[0] << 8) | handle->buf[1];               /* set raw accel x */
+                (int16_t) ((uint16_t) handle->buf[0] << 8) | handle->buf[1];               /* set raw accel x */
         accel_raw[0][1] =
-                (int16_t)((uint16_t) handle->buf[2] << 8) | handle->buf[3];               /* set raw accel y */
+                (int16_t) ((uint16_t) handle->buf[2] << 8) | handle->buf[3];               /* set raw accel y */
         accel_raw[0][2] =
-                (int16_t)((uint16_t) handle->buf[4] << 8) | handle->buf[5];               /* set raw accel z */
-        gyro_raw[0][0] = (int16_t)((uint16_t) handle->buf[8] << 8) | handle->buf[9];                /* set raw gyro x */
-        gyro_raw[0][1] = (int16_t)((uint16_t) handle->buf[10] << 8) | handle->buf[11];              /* set raw gyro y */
-        gyro_raw[0][2] = (int16_t)((uint16_t) handle->buf[12] << 8) | handle->buf[13];              /* set raw gyro z */
+                (int16_t) ((uint16_t) handle->buf[4] << 8) | handle->buf[5];               /* set raw accel z */
+        gyro_raw[0][0] =
+                (int16_t) ((uint16_t) handle->buf[8] << 8) | handle->buf[9];                /* set raw gyro x */
+        gyro_raw[0][1] =
+                (int16_t) ((uint16_t) handle->buf[10] << 8) | handle->buf[11];              /* set raw gyro y */
+        gyro_raw[0][2] =
+                (int16_t) ((uint16_t) handle->buf[12] << 8) | handle->buf[13];              /* set raw gyro z */
 
         if (accel_conf == 0)                                                                       /* ±2g */
         {
@@ -4626,9 +4651,9 @@ uint8_t mpu9250_read(mpu9250_handle_t *handle,
 
                 return 1;                                                                          /* return error */
             }
-            mag_raw[0][0] = (int16_t)((uint16_t) handle->buf[2] << 8) | handle->buf[1];             /* set raw mag x */
-            mag_raw[0][1] = (int16_t)((uint16_t) handle->buf[4] << 8) | handle->buf[3];             /* set raw mag y */
-            mag_raw[0][2] = (int16_t)((uint16_t) handle->buf[6] << 8) | handle->buf[5];             /* set raw mag z */
+            mag_raw[0][0] = (int16_t) ((uint16_t) handle->buf[2] << 8) | handle->buf[1];             /* set raw mag x */
+            mag_raw[0][1] = (int16_t) ((uint16_t) handle->buf[4] << 8) | handle->buf[3];             /* set raw mag y */
+            mag_raw[0][2] = (int16_t) ((uint16_t) handle->buf[6] << 8) | handle->buf[5];             /* set raw mag z */
 
             mag_k_x = ((float) handle->mag_asa[0] - 128.0f) * 0.5f / 128.0f +
                       1.0f;                 /* get the x sensitivity adjustment */
@@ -4692,7 +4717,7 @@ uint8_t mpu9250_read_temperature(mpu9250_handle_t *handle, int16_t (*raw), float
 
         return 1;                                                            /* return error */
     }
-    *raw = (int16_t)((uint16_t) buf[0] << 8) | buf[1];                        /* get the raw */
+    *raw = (int16_t) ((uint16_t) buf[0] << 8) | buf[1];                        /* get the raw */
     *degrees = (float) (*raw) / 321.0f + 21.0f;                               /* convert the degrees */
 
     return 0;                                                                /* success return 0 */
@@ -4722,7 +4747,7 @@ uint8_t mpu9250_irq_handler(mpu9250_handle_t *handle) {
         return 3;                                                                         /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_INT_STATUS, (uint8_t * ) & prev, 1);            /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_INT_STATUS, (uint8_t *) &prev, 1);            /* read config */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print("mpu9250: read int status failed.\n");                        /* read int status failed */
@@ -4799,7 +4824,7 @@ uint8_t mpu9250_mag_init(mpu9250_handle_t *handle) {
 
     if (handle->iic_spi == MPU9250_INTERFACE_IIC)                                           /* if iic interface */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);           /* read config */
+        res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);           /* read config */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print("mpu9250: read user ctrl failed.\n");                       /* read user ctrl failed */
@@ -4807,14 +4832,14 @@ uint8_t mpu9250_mag_init(mpu9250_handle_t *handle) {
             return 1;                                                                       /* return error */
         }
         prev &= ~(1 << 5);                                                                  /* disable iic master */
-        res = a_mpu9250_write(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);          /* write config */
+        res = a_mpu9250_write(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);          /* write config */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print("mpu9250: write user ctrl failed.\n");                      /* write user ctrl failed */
 
             return 1;                                                                       /* return error */
         }
-        res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev, 1);         /* read config */
+        res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev, 1);         /* read config */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -4824,7 +4849,7 @@ uint8_t mpu9250_mag_init(mpu9250_handle_t *handle) {
         }
         prev &= ~(1 << 1);                                                                  /* clear config */
         prev |= 1 << 1;                                                                     /* enable bypass */
-        res = a_mpu9250_write(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev, 1);        /* write config */
+        res = a_mpu9250_write(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev, 1);        /* write config */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -4833,7 +4858,7 @@ uint8_t mpu9250_mag_init(mpu9250_handle_t *handle) {
             return 1;                                                                       /* return error */
         }
 
-        res = a_mpu9250_mag_read(handle, AK8963_REG_WIA, (uint8_t * ) & prev, 1);              /* read who am I */
+        res = a_mpu9250_mag_read(handle, AK8963_REG_WIA, (uint8_t *) &prev, 1);              /* read who am I */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -4859,7 +4884,7 @@ uint8_t mpu9250_mag_init(mpu9250_handle_t *handle) {
         timeout = 100;                                                                      /* set timeout 1000ms */
         while (timeout != 0)                                                                /* check the timeout */
         {
-            res = a_mpu9250_mag_read(handle, AK8963_REG_CNTL2, (uint8_t * ) & prev, 1);        /* read cntl2 */
+            res = a_mpu9250_mag_read(handle, AK8963_REG_CNTL2, (uint8_t *) &prev, 1);        /* read cntl2 */
             if (res != 0)                                                                   /* check result */
             {
                 handle->debug_print("mpu9250: mag read cntl2 failed.\n");                   /* mag read cntl2 failed */
@@ -4954,7 +4979,7 @@ uint8_t mpu9250_mag_deinit(mpu9250_handle_t *handle) {
         return 4;                                                                   /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);       /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);       /* read config */
     if (res != 0)                                                                   /* check result */
     {
         handle->debug_print("mpu9250: read user ctrl failed.\n");                   /* read user ctrl failed */
@@ -4962,14 +4987,14 @@ uint8_t mpu9250_mag_deinit(mpu9250_handle_t *handle) {
         return 1;                                                                   /* return error */
     }
     prev &= ~(1 << 5);                                                              /* disable iic master */
-    res = a_mpu9250_write(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);      /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);      /* write config */
     if (res != 0)                                                                   /* check result */
     {
         handle->debug_print("mpu9250: write user ctrl failed.\n");                  /* write user ctrl failed */
 
         return 1;                                                                   /* return error */
     }
-    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev, 1);     /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev, 1);     /* read config */
     if (res != 0)                                                                   /* check result */
     {
         handle->debug_print("mpu9250: read int pin cfg failed.\n");                 /* read int pin cfg failed */
@@ -4978,7 +5003,7 @@ uint8_t mpu9250_mag_deinit(mpu9250_handle_t *handle) {
     }
     prev &= ~(1 << 1);                                                              /* clear config */
     prev |= 1 << 1;                                                                 /* enable bypass */
-    res = a_mpu9250_write(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev, 1);    /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev, 1);    /* write config */
     if (res != 0)                                                                   /* check result */
     {
         handle->debug_print("mpu9250: write int pin cfg failed.\n");                /* write int pin cfg failed */
@@ -4986,7 +5011,7 @@ uint8_t mpu9250_mag_deinit(mpu9250_handle_t *handle) {
         return 1;                                                                   /* return error */
     }
 
-    res = a_mpu9250_mag_read(handle, AK8963_REG_WIA, (uint8_t * ) & prev, 1);          /* read who am I */
+    res = a_mpu9250_mag_read(handle, AK8963_REG_WIA, (uint8_t *) &prev, 1);          /* read who am I */
     if (res != 0)                                                                   /* check result */
     {
         handle->debug_print("mpu9250: mag read who am i failed.\n");                /* mag read who am I failed */
@@ -5000,7 +5025,7 @@ uint8_t mpu9250_mag_deinit(mpu9250_handle_t *handle) {
         return 5;                                                                   /* return error */
     }
 
-    res = a_mpu9250_mag_read(handle, AK8963_REG_CNTL1, (uint8_t * ) & prev, 1);        /* read cntl1 */
+    res = a_mpu9250_mag_read(handle, AK8963_REG_CNTL1, (uint8_t *) &prev, 1);        /* read cntl1 */
     if (res != 0)                                                                   /* check the result */
     {
         handle->debug_print("mpu9250: mag read cntl1 failed.\n");                   /* mag read cntl1 failed */
@@ -5009,7 +5034,7 @@ uint8_t mpu9250_mag_deinit(mpu9250_handle_t *handle) {
     }
     prev &= ~(0xF << 0);                                                            /* clear config */
     prev |= 0x00 << 0;                                                              /* set the power mode */
-    res = a_mpu9250_mag_write(handle, AK8963_REG_CNTL1, (uint8_t * ) & prev);          /* write cntl1 */
+    res = a_mpu9250_mag_write(handle, AK8963_REG_CNTL1, (uint8_t *) &prev);          /* write cntl1 */
     if (res != 0)                                                                   /* check the result */
     {
         handle->debug_print("mpu9250: mag write cntl1 failed.\n");                  /* mag write cntl1 failed */
@@ -5064,9 +5089,9 @@ uint8_t mpu9250_mag_read(mpu9250_handle_t *handle, int16_t mag_raw[3], float mag
 
         return 1;                                                                 /* return error */
     }
-    mag_raw[0] = (int16_t)((uint16_t) buf[2] << 8) | buf[1];                       /* set raw mag x */
-    mag_raw[1] = (int16_t)((uint16_t) buf[4] << 8) | buf[3];                       /* set raw mag y */
-    mag_raw[2] = (int16_t)((uint16_t) buf[6] << 8) | buf[5];                       /* set raw mag z */
+    mag_raw[0] = (int16_t) ((uint16_t) buf[2] << 8) | buf[1];                       /* set raw mag x */
+    mag_raw[1] = (int16_t) ((uint16_t) buf[4] << 8) | buf[3];                       /* set raw mag y */
+    mag_raw[2] = (int16_t) ((uint16_t) buf[6] << 8) | buf[5];                       /* set raw mag z */
 
     mag_k_x =
             ((float) handle->mag_asa[0] - 128.0f) * 0.5f / 128.0f + 1.0f;        /* get the x sensitivity adjustment */
@@ -5243,7 +5268,7 @@ uint8_t mpu9250_mag_set_mode(mpu9250_handle_t *handle, mpu9250_magnetometer_mode
         return 4;                                                                   /* return error */
     }
 
-    res = a_mpu9250_mag_read(handle, AK8963_REG_CNTL1, (uint8_t * ) & prev, 1);        /* read cntl1 */
+    res = a_mpu9250_mag_read(handle, AK8963_REG_CNTL1, (uint8_t *) &prev, 1);        /* read cntl1 */
     if (res != 0)                                                                   /* check the result */
     {
         handle->debug_print("mpu9250: mag read cntl1 failed.\n");                   /* mag read cntl1 failed */
@@ -5252,7 +5277,7 @@ uint8_t mpu9250_mag_set_mode(mpu9250_handle_t *handle, mpu9250_magnetometer_mode
     }
     prev &= ~(0xF << 0);                                                            /* clear config */
     prev |= mode << 0;                                                              /* set the mode */
-    res = a_mpu9250_mag_write(handle, AK8963_REG_CNTL1, (uint8_t * ) & prev);          /* write cntl1 */
+    res = a_mpu9250_mag_write(handle, AK8963_REG_CNTL1, (uint8_t *) &prev);          /* write cntl1 */
     if (res != 0)                                                                   /* check the result */
     {
         handle->debug_print("mpu9250: mag write cntl1 failed.\n");                  /* mag write cntl1 failed */
@@ -5294,7 +5319,7 @@ uint8_t mpu9250_mag_get_mode(mpu9250_handle_t *handle, mpu9250_magnetometer_mode
         return 4;                                                                   /* return error */
     }
 
-    res = a_mpu9250_mag_read(handle, AK8963_REG_CNTL1, (uint8_t * ) & prev, 1);        /* read cntl1 */
+    res = a_mpu9250_mag_read(handle, AK8963_REG_CNTL1, (uint8_t *) &prev, 1);        /* read cntl1 */
     if (res != 0)                                                                   /* check the result */
     {
         handle->debug_print("mpu9250: mag read cntl1 failed.\n");                   /* mag read cntl1 failed */
@@ -5337,7 +5362,7 @@ uint8_t mpu9250_mag_set_bits(mpu9250_handle_t *handle, mpu9250_magnetometer_bits
         return 4;                                                                   /* return error */
     }
 
-    res = a_mpu9250_mag_read(handle, AK8963_REG_CNTL1, (uint8_t * ) & prev, 1);        /* read cntl1 */
+    res = a_mpu9250_mag_read(handle, AK8963_REG_CNTL1, (uint8_t *) &prev, 1);        /* read cntl1 */
     if (res != 0)                                                                   /* check the result */
     {
         handle->debug_print("mpu9250: mag read cntl1 failed.\n");                   /* mag read cntl1 failed */
@@ -5346,7 +5371,7 @@ uint8_t mpu9250_mag_set_bits(mpu9250_handle_t *handle, mpu9250_magnetometer_bits
     }
     prev &= ~(1 << 4);                                                              /* clear config */
     prev |= bits << 4;                                                              /* set the mode */
-    res = a_mpu9250_mag_write(handle, AK8963_REG_CNTL1, (uint8_t * ) & prev);          /* write cntl1 */
+    res = a_mpu9250_mag_write(handle, AK8963_REG_CNTL1, (uint8_t *) &prev);          /* write cntl1 */
     if (res != 0)                                                                   /* check the result */
     {
         handle->debug_print("mpu9250: mag write cntl1 failed.\n");                  /* mag write cntl1 failed */
@@ -5388,7 +5413,7 @@ uint8_t mpu9250_mag_get_bits(mpu9250_handle_t *handle, mpu9250_magnetometer_bits
         return 4;                                                                   /* return error */
     }
 
-    res = a_mpu9250_mag_read(handle, AK8963_REG_CNTL1, (uint8_t * ) & prev, 1);        /* read cntl1 */
+    res = a_mpu9250_mag_read(handle, AK8963_REG_CNTL1, (uint8_t *) &prev, 1);        /* read cntl1 */
     if (res != 0)                                                                   /* check the result */
     {
         handle->debug_print("mpu9250: mag read cntl1 failed.\n");                   /* mag read cntl1 failed */
@@ -5431,7 +5456,7 @@ uint8_t mpu9250_mag_set_reset(mpu9250_handle_t *handle, mpu9250_bool_t enable) {
         return 4;                                                                   /* return error */
     }
 
-    res = a_mpu9250_mag_read(handle, AK8963_REG_CNTL2, (uint8_t * ) & prev, 1);        /* read cntl2 */
+    res = a_mpu9250_mag_read(handle, AK8963_REG_CNTL2, (uint8_t *) &prev, 1);        /* read cntl2 */
     if (res != 0)                                                                   /* check the result */
     {
         handle->debug_print("mpu9250: mag read cntl2 failed.\n");                   /* mag read cntl2 failed */
@@ -5440,7 +5465,7 @@ uint8_t mpu9250_mag_set_reset(mpu9250_handle_t *handle, mpu9250_bool_t enable) {
     }
     prev &= ~(1 << 0);                                                              /* clear config */
     prev |= enable << 0;                                                            /* set the bool */
-    res = a_mpu9250_mag_write(handle, AK8963_REG_CNTL2, (uint8_t * ) & prev);          /* write cntl2 */
+    res = a_mpu9250_mag_write(handle, AK8963_REG_CNTL2, (uint8_t *) &prev);          /* write cntl2 */
     if (res != 0)                                                                   /* check the result */
     {
         handle->debug_print("mpu9250: mag write cntl2 failed.\n");                  /* mag write cntl2 failed */
@@ -5482,7 +5507,7 @@ uint8_t mpu9250_mag_get_reset(mpu9250_handle_t *handle, mpu9250_bool_t *enable) 
         return 4;                                                                   /* return error */
     }
 
-    res = a_mpu9250_mag_read(handle, AK8963_REG_CNTL2, (uint8_t * ) & prev, 1);        /* read cntl2 */
+    res = a_mpu9250_mag_read(handle, AK8963_REG_CNTL2, (uint8_t *) &prev, 1);        /* read cntl2 */
     if (res != 0)                                                                   /* check the result */
     {
         handle->debug_print("mpu9250: mag read cntl2 failed.\n");                   /* mag read cntl2 failed */
@@ -5525,7 +5550,7 @@ uint8_t mpu9250_mag_set_self_test(mpu9250_handle_t *handle, mpu9250_bool_t enabl
         return 4;                                                                  /* return error */
     }
 
-    res = a_mpu9250_mag_read(handle, AK8963_REG_ASTC, (uint8_t * ) & prev, 1);        /* read astc */
+    res = a_mpu9250_mag_read(handle, AK8963_REG_ASTC, (uint8_t *) &prev, 1);        /* read astc */
     if (res != 0)                                                                  /* check the result */
     {
         handle->debug_print("mpu9250: mag read astc failed.\n");                   /* mag read astc failed */
@@ -5534,7 +5559,7 @@ uint8_t mpu9250_mag_set_self_test(mpu9250_handle_t *handle, mpu9250_bool_t enabl
     }
     prev &= ~(1 << 6);                                                             /* clear config */
     prev |= enable << 6;                                                           /* set the bool */
-    res = a_mpu9250_mag_write(handle, AK8963_REG_ASTC, (uint8_t * ) & prev);          /* write astc */
+    res = a_mpu9250_mag_write(handle, AK8963_REG_ASTC, (uint8_t *) &prev);          /* write astc */
     if (res != 0)                                                                  /* check the result */
     {
         handle->debug_print("mpu9250: mag write astc failed.\n");                  /* mag write astc failed */
@@ -5576,7 +5601,7 @@ uint8_t mpu9250_mag_get_self_test(mpu9250_handle_t *handle, mpu9250_bool_t *enab
         return 4;                                                                  /* return error */
     }
 
-    res = a_mpu9250_mag_read(handle, AK8963_REG_ASTC, (uint8_t * ) & prev, 1);        /* read astc */
+    res = a_mpu9250_mag_read(handle, AK8963_REG_ASTC, (uint8_t *) &prev, 1);        /* read astc */
     if (res != 0)                                                                  /* check the result */
     {
         handle->debug_print("mpu9250: mag read astc failed.\n");                   /* mag read astc failed */
@@ -5619,7 +5644,7 @@ uint8_t mpu9250_mag_iic_disable(mpu9250_handle_t *handle) {
     }
 
     prev = 0x1B;                                                                   /* set the command */
-    res = a_mpu9250_mag_write(handle, AK8963_REG_I2CDIS, (uint8_t * ) & prev);        /* write i2c-dis */
+    res = a_mpu9250_mag_write(handle, AK8963_REG_I2CDIS, (uint8_t *) &prev);        /* write i2c-dis */
     if (res != 0)                                                                  /* check the result */
     {
         handle->debug_print("mpu9250: mag write i2cdis failed.\n");                /* mag write i2c-dis failed */
@@ -5701,7 +5726,7 @@ uint8_t mpu9250_mag_set_fifo_mode(mpu9250_handle_t *handle) {
         return 4;                                                                   /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);           /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);           /* read config */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print("mpu9250: read user ctrl failed.\n");                       /* read user ctrl failed */
@@ -5710,14 +5735,14 @@ uint8_t mpu9250_mag_set_fifo_mode(mpu9250_handle_t *handle) {
     }
     prev &= ~(1 << 5);                                                                  /* disable iic master */
     prev |= (1 << 5);                                                                   /* enable iic master */
-    res = a_mpu9250_write(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);          /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);          /* write config */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print("mpu9250: write user ctrl failed.\n");                      /* write user ctrl failed */
 
         return 1;                                                                       /* return error */
     }
-    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev, 1);         /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev, 1);         /* read config */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print("mpu9250: read int pin cfg failed.\n");                     /* read int pin cfg failed */
@@ -5725,7 +5750,7 @@ uint8_t mpu9250_mag_set_fifo_mode(mpu9250_handle_t *handle) {
         return 1;                                                                       /* return error */
     }
     prev &= ~(1 << 1);                                                                  /* disable bypass */
-    res = a_mpu9250_write(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev, 1);        /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev, 1);        /* write config */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print("mpu9250: write int pin cfg failed.\n");                    /* write int pin cfg failed */
@@ -5735,7 +5760,7 @@ uint8_t mpu9250_mag_set_fifo_mode(mpu9250_handle_t *handle) {
 
     prev = 0x80 |
            AK8963_IIC_ADDRESS;                                                   /* set the read mode and iic address */
-    res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_ADDR, (uint8_t * ) & prev, 1);      /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_ADDR, (uint8_t *) &prev, 1);      /* write config */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print("mpu9250: write iic slv0 addr failed.\n");                  /* write iic slv0 addr failed */
@@ -5743,7 +5768,7 @@ uint8_t mpu9250_mag_set_fifo_mode(mpu9250_handle_t *handle) {
         return 1;                                                                       /* return error */
     }
     prev = AK8963_REG_ST1;                                                              /* set the start register address */
-    res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_REG, (uint8_t * ) & prev, 1);       /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_REG, (uint8_t *) &prev, 1);       /* write config */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print("mpu9250: write iic slv0 reg failed.\n");                   /* write iic slv0 reg failed */
@@ -5751,7 +5776,7 @@ uint8_t mpu9250_mag_set_fifo_mode(mpu9250_handle_t *handle) {
         return 1;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_FIFO_EN, (uint8_t * ) & prev, 1);             /* read fifo enable */
+    res = a_mpu9250_read(handle, MPU9250_REG_FIFO_EN, (uint8_t *) &prev, 1);             /* read fifo enable */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print("mpu9250: read fifo enable failed.\n");                     /* read fifo enable failed */
@@ -5760,7 +5785,7 @@ uint8_t mpu9250_mag_set_fifo_mode(mpu9250_handle_t *handle) {
     }
     prev &= ~(1 << 0);                                                                  /* clear the settings */
     prev |= 1 << 0;                                                                     /* enable slv0 fifo */
-    res = a_mpu9250_write(handle, MPU9250_REG_FIFO_EN, (uint8_t * ) & prev, 1);            /* write fifo enable ctrl */
+    res = a_mpu9250_write(handle, MPU9250_REG_FIFO_EN, (uint8_t *) &prev, 1);            /* write fifo enable ctrl */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print("mpu9250: write fifo enable failed.\n");                    /* write fifo enable failed */
@@ -5769,7 +5794,7 @@ uint8_t mpu9250_mag_set_fifo_mode(mpu9250_handle_t *handle) {
     }
 
     prev = 0x88;                                                                        /* start and read 8 bytes */
-    res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t * ) & prev, 1);      /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t *) &prev, 1);      /* write config */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print("mpu9250: write iic slv0 ctrl failed.\n");                  /* write iic slv0 ctrl failed */
@@ -5804,7 +5829,7 @@ uint8_t mpu9250_set_fifo(mpu9250_handle_t *handle, mpu9250_bool_t enable) {
         return 3;                                                                     /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);         /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);         /* read config */
     if (res != 0)                                                                     /* check result */
     {
         handle->debug_print("mpu9250: read user ctrl failed.\n");                     /* read user ctrl failed */
@@ -5813,7 +5838,7 @@ uint8_t mpu9250_set_fifo(mpu9250_handle_t *handle, mpu9250_bool_t enable) {
     }
     prev &= ~(1 << 6);                                                                /* clear config */
     prev |= enable << 6;                                                              /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);        /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);        /* write config */
     if (res != 0)                                                                     /* check result */
     {
         handle->debug_print("mpu9250: write user ctrl failed.\n");                    /* write user ctrl failed */
@@ -5848,7 +5873,7 @@ uint8_t mpu9250_get_fifo(mpu9250_handle_t *handle, mpu9250_bool_t *enable) {
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);        /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);        /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print("mpu9250: read user ctrl failed.\n");                    /* read user ctrl failed */
@@ -5917,7 +5942,7 @@ uint8_t mpu9250_set_iic_master(mpu9250_handle_t *handle, mpu9250_bool_t enable) 
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);        /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);        /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print("mpu9250: read user ctrl failed.\n");                    /* read user ctrl failed */
@@ -5926,7 +5951,7 @@ uint8_t mpu9250_set_iic_master(mpu9250_handle_t *handle, mpu9250_bool_t enable) 
     }
     prev &= ~(1 << 5);                                                               /* clear config */
     prev |= enable << 5;                                                             /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);       /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);       /* write config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print("mpu9250: write user ctrl failed.\n");                   /* write user ctrl failed */
@@ -5961,7 +5986,7 @@ uint8_t mpu9250_get_iic_master(mpu9250_handle_t *handle, mpu9250_bool_t *enable)
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);        /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);        /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print("mpu9250: read user ctrl failed.\n");                    /* read user ctrl failed */
@@ -5997,7 +6022,7 @@ uint8_t mpu9250_set_disable_iic_slave(mpu9250_handle_t *handle, mpu9250_bool_t e
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);        /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);        /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print("mpu9250: read user ctrl failed.\n");                    /* read user ctrl failed */
@@ -6006,7 +6031,7 @@ uint8_t mpu9250_set_disable_iic_slave(mpu9250_handle_t *handle, mpu9250_bool_t e
     }
     prev &= ~(1 << 4);                                                               /* clear config */
     prev |= enable << 4;                                                             /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);       /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);       /* write config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print("mpu9250: write user ctrl failed.\n");                   /* write user ctrl failed */
@@ -6041,7 +6066,7 @@ uint8_t mpu9250_get_disable_iic_slave(mpu9250_handle_t *handle, mpu9250_bool_t *
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);        /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);        /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print("mpu9250: read user ctrl failed.\n");                    /* read user ctrl failed */
@@ -6076,7 +6101,7 @@ uint8_t mpu9250_fifo_reset(mpu9250_handle_t *handle) {
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);        /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);        /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print("mpu9250: read user ctrl failed.\n");                    /* read user ctrl failed */
@@ -6085,7 +6110,7 @@ uint8_t mpu9250_fifo_reset(mpu9250_handle_t *handle) {
     }
     prev &= ~(1 << 2);                                                               /* clear config */
     prev |= 1 << 2;                                                                  /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);       /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);       /* write config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print("mpu9250: write user ctrl failed.\n");                   /* write user ctrl failed */
@@ -6120,7 +6145,7 @@ uint8_t mpu9250_get_fifo_reset(mpu9250_handle_t *handle, mpu9250_bool_t *enable)
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);        /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);        /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print("mpu9250: read user ctrl failed.\n");                    /* read user ctrl failed */
@@ -6155,7 +6180,7 @@ uint8_t mpu9250_iic_master_reset(mpu9250_handle_t *handle) {
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);        /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);        /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print("mpu9250: read user ctrl failed.\n");                    /* read user ctrl failed */
@@ -6164,7 +6189,7 @@ uint8_t mpu9250_iic_master_reset(mpu9250_handle_t *handle) {
     }
     prev &= ~(1 << 1);                                                               /* clear config */
     prev |= 1 << 1;                                                                  /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);       /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);       /* write config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print("mpu9250: write user ctrl failed.\n");                   /* write user ctrl failed */
@@ -6199,7 +6224,7 @@ uint8_t mpu9250_get_iic_master_reset(mpu9250_handle_t *handle, mpu9250_bool_t *e
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);        /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);        /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print("mpu9250: read user ctrl failed.\n");                    /* read user ctrl failed */
@@ -6234,7 +6259,7 @@ uint8_t mpu9250_sensor_reset(mpu9250_handle_t *handle) {
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);        /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);        /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print("mpu9250: read user ctrl failed.\n");                    /* read user ctrl failed */
@@ -6243,7 +6268,7 @@ uint8_t mpu9250_sensor_reset(mpu9250_handle_t *handle) {
     }
     prev &= ~(1 << 0);                                                               /* clear config */
     prev |= 1 << 0;                                                                  /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);       /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);       /* write config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print("mpu9250: write user ctrl failed.\n");                   /* write user ctrl failed */
@@ -6278,7 +6303,7 @@ uint8_t mpu9250_get_sensor_reset(mpu9250_handle_t *handle, mpu9250_bool_t *enabl
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t * ) & prev, 1);        /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_USER_CTRL, (uint8_t *) &prev, 1);        /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print("mpu9250: read user ctrl failed.\n");                    /* read user ctrl failed */
@@ -6313,7 +6338,7 @@ uint8_t mpu9250_device_reset(mpu9250_handle_t *handle) {
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t * ) & prev, 1);       /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t *) &prev, 1);       /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6323,7 +6348,7 @@ uint8_t mpu9250_device_reset(mpu9250_handle_t *handle) {
     }
     prev &= ~(1 << 7);                                                               /* clear config */
     prev |= 1 << 7;                                                                  /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t * ) & prev, 1);      /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t *) &prev, 1);      /* write config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6359,7 +6384,7 @@ uint8_t mpu9250_get_device_reset(mpu9250_handle_t *handle, mpu9250_bool_t *enabl
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t * ) & prev, 1);       /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t *) &prev, 1);       /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6396,7 +6421,7 @@ uint8_t mpu9250_set_clock_source(mpu9250_handle_t *handle, mpu9250_clock_source_
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t * ) & prev, 1);       /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t *) &prev, 1);       /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6406,7 +6431,7 @@ uint8_t mpu9250_set_clock_source(mpu9250_handle_t *handle, mpu9250_clock_source_
     }
     prev &= ~(0x7 << 0);                                                             /* clear config */
     prev |= clock_source << 0;                                                       /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t * ) & prev, 1);      /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t *) &prev, 1);      /* write config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6442,7 +6467,7 @@ uint8_t mpu9250_get_clock_source(mpu9250_handle_t *handle, mpu9250_clock_source_
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t * ) & prev, 1);       /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t *) &prev, 1);       /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6479,7 +6504,7 @@ uint8_t mpu9250_set_ptat(mpu9250_handle_t *handle, mpu9250_bool_t enable) {
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t * ) & prev, 1);       /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t *) &prev, 1);       /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6489,7 +6514,7 @@ uint8_t mpu9250_set_ptat(mpu9250_handle_t *handle, mpu9250_bool_t enable) {
     }
     prev &= ~(1 << 3);                                                               /* clear config */
     prev |= (!enable) << 3;                                                          /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t * ) & prev, 1);      /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t *) &prev, 1);      /* write config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6525,7 +6550,7 @@ uint8_t mpu9250_get_ptat(mpu9250_handle_t *handle, mpu9250_bool_t *enable) {
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t * ) & prev, 1);       /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t *) &prev, 1);       /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6562,7 +6587,7 @@ uint8_t mpu9250_set_cycle_wake_up(mpu9250_handle_t *handle, mpu9250_bool_t enabl
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t * ) & prev, 1);       /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t *) &prev, 1);       /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6572,7 +6597,7 @@ uint8_t mpu9250_set_cycle_wake_up(mpu9250_handle_t *handle, mpu9250_bool_t enabl
     }
     prev &= ~(1 << 5);                                                               /* clear config */
     prev |= enable << 5;                                                             /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t * ) & prev, 1);      /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t *) &prev, 1);      /* write config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6608,7 +6633,7 @@ uint8_t mpu9250_get_cycle_wake_up(mpu9250_handle_t *handle, mpu9250_bool_t *enab
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t * ) & prev, 1);       /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t *) &prev, 1);       /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6645,7 +6670,7 @@ uint8_t mpu9250_set_sleep(mpu9250_handle_t *handle, mpu9250_bool_t enable) {
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t * ) & prev, 1);       /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t *) &prev, 1);       /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6655,7 +6680,7 @@ uint8_t mpu9250_set_sleep(mpu9250_handle_t *handle, mpu9250_bool_t enable) {
     }
     prev &= ~(1 << 6);                                                               /* clear config */
     prev |= enable << 6;                                                             /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t * ) & prev, 1);      /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t *) &prev, 1);      /* write config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6691,7 +6716,7 @@ uint8_t mpu9250_get_sleep(mpu9250_handle_t *handle, mpu9250_bool_t *enable) {
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t * ) & prev, 1);       /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t *) &prev, 1);       /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6728,7 +6753,7 @@ uint8_t mpu9250_set_gyro_standby(mpu9250_handle_t *handle, mpu9250_bool_t enable
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t * ) & prev, 1);       /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t *) &prev, 1);       /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6738,7 +6763,7 @@ uint8_t mpu9250_set_gyro_standby(mpu9250_handle_t *handle, mpu9250_bool_t enable
     }
     prev &= ~(1 << 4);                                                               /* clear config */
     prev |= enable << 4;                                                             /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t * ) & prev, 1);      /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t *) &prev, 1);      /* write config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6774,7 +6799,7 @@ uint8_t mpu9250_get_gyro_standby(mpu9250_handle_t *handle, mpu9250_bool_t *enabl
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t * ) & prev, 1);       /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t *) &prev, 1);       /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6812,7 +6837,7 @@ uint8_t mpu9250_set_standby_mode(mpu9250_handle_t *handle, mpu9250_source_t sour
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_2, (uint8_t * ) & prev, 1);       /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_2, (uint8_t *) &prev, 1);       /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6822,7 +6847,7 @@ uint8_t mpu9250_set_standby_mode(mpu9250_handle_t *handle, mpu9250_source_t sour
     }
     prev &= ~(1 << source);                                                          /* clear config */
     prev |= enable << source;                                                        /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_PWR_MGMT_2, (uint8_t * ) & prev, 1);      /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_PWR_MGMT_2, (uint8_t *) &prev, 1);      /* write config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6859,7 +6884,7 @@ uint8_t mpu9250_get_standby_mode(mpu9250_handle_t *handle, mpu9250_source_t sour
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_2, (uint8_t * ) & prev, 1);       /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_2, (uint8_t *) &prev, 1);       /* read config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print(
@@ -6903,7 +6928,7 @@ uint8_t mpu9250_get_fifo_count(mpu9250_handle_t *handle, uint16_t *count) {
 
         return 1;                                                                   /* return error */
     }
-    *count = (uint16_t)(((uint16_t) buf[0] << 8) | buf[1]);                          /* set count */
+    *count = (uint16_t) (((uint16_t) buf[0] << 8) | buf[1]);                          /* set count */
 
     return 0;                                                                       /* success return 0 */
 }
@@ -7003,7 +7028,7 @@ uint8_t mpu9250_set_signal_path_reset(mpu9250_handle_t *handle, mpu9250_signal_p
         return 3;                                                                             /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_SIGNAL_PATH_RESET, (uint8_t * ) & prev, 1);         /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_SIGNAL_PATH_RESET, (uint8_t *) &prev, 1);         /* read config */
     if (res != 0)                                                                             /* check result */
     {
         handle->debug_print(
@@ -7013,7 +7038,7 @@ uint8_t mpu9250_set_signal_path_reset(mpu9250_handle_t *handle, mpu9250_signal_p
     }
     prev &= ~(1 << path);                                                                     /* clear config */
     prev |= 1 << path;                                                                        /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_SIGNAL_PATH_RESET, (uint8_t * ) & prev, 1);        /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_SIGNAL_PATH_RESET, (uint8_t *) &prev, 1);        /* write config */
     if (res != 0)                                                                             /* check result */
     {
         handle->debug_print(
@@ -7048,7 +7073,7 @@ uint8_t mpu9250_set_sample_rate_divider(mpu9250_handle_t *handle, uint8_t d) {
         return 3;                                                                    /* return error */
     }
 
-    res = a_mpu9250_write(handle, MPU9250_REG_SMPRT_DIV, (uint8_t * ) & d, 1);          /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_SMPRT_DIV, (uint8_t *) &d, 1);          /* write config */
     if (res != 0)                                                                    /* check result */
     {
         handle->debug_print("mpu9250: write smprt div failed.\n");                   /* write smprt div failed */
@@ -7117,7 +7142,7 @@ uint8_t mpu9250_set_extern_sync(mpu9250_handle_t *handle, mpu9250_extern_sync_t 
         return 3;                                                                  /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_CONFIG, (uint8_t * ) & prev, 1);         /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_CONFIG, (uint8_t *) &prev, 1);         /* read config */
     if (res != 0)                                                                  /* check result */
     {
         handle->debug_print("mpu9250: read config failed.\n");                     /* read config failed */
@@ -7126,7 +7151,7 @@ uint8_t mpu9250_set_extern_sync(mpu9250_handle_t *handle, mpu9250_extern_sync_t 
     }
     prev &= ~(0x7 << 3);                                                           /* clear config */
     prev |= sync << 3;                                                             /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_CONFIG, (uint8_t * ) & prev, 1);        /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_CONFIG, (uint8_t *) &prev, 1);        /* write config */
     if (res != 0)                                                                  /* check result */
     {
         handle->debug_print("mpu9250: write config failed.\n");                    /* write config failed */
@@ -7161,7 +7186,7 @@ uint8_t mpu9250_get_extern_sync(mpu9250_handle_t *handle, mpu9250_extern_sync_t 
         return 3;                                                                  /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_CONFIG, (uint8_t * ) & prev, 1);         /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_CONFIG, (uint8_t *) &prev, 1);         /* read config */
     if (res != 0)                                                                  /* check result */
     {
         handle->debug_print("mpu9250: read config failed.\n");                     /* read config failed */
@@ -7197,7 +7222,7 @@ uint8_t mpu9250_set_low_pass_filter(mpu9250_handle_t *handle, mpu9250_low_pass_f
         return 3;                                                                  /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_CONFIG, (uint8_t * ) & prev, 1);         /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_CONFIG, (uint8_t *) &prev, 1);         /* read config */
     if (res != 0)                                                                  /* check result */
     {
         handle->debug_print("mpu9250: read config failed.\n");                     /* read config failed */
@@ -7206,7 +7231,7 @@ uint8_t mpu9250_set_low_pass_filter(mpu9250_handle_t *handle, mpu9250_low_pass_f
     }
     prev &= ~(0x7 << 0);                                                           /* clear config */
     prev |= filter << 0;                                                           /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_CONFIG, (uint8_t * ) & prev, 1);        /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_CONFIG, (uint8_t *) &prev, 1);        /* write config */
     if (res != 0)                                                                  /* check result */
     {
         handle->debug_print("mpu9250: write config failed.\n");                    /* write config failed */
@@ -7241,7 +7266,7 @@ uint8_t mpu9250_get_low_pass_filter(mpu9250_handle_t *handle, mpu9250_low_pass_f
         return 3;                                                                  /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_CONFIG, (uint8_t * ) & prev, 1);         /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_CONFIG, (uint8_t *) &prev, 1);         /* read config */
     if (res != 0)                                                                  /* check result */
     {
         handle->debug_print("mpu9250: read config failed.\n");                     /* read config failed */
@@ -7277,7 +7302,7 @@ uint8_t mpu9250_set_fifo_mode(mpu9250_handle_t *handle, mpu9250_fifo_mode mode) 
         return 3;                                                                  /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_CONFIG, (uint8_t * ) & prev, 1);         /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_CONFIG, (uint8_t *) &prev, 1);         /* read config */
     if (res != 0)                                                                  /* check result */
     {
         handle->debug_print("mpu9250: read config failed.\n");                     /* read config failed */
@@ -7286,7 +7311,7 @@ uint8_t mpu9250_set_fifo_mode(mpu9250_handle_t *handle, mpu9250_fifo_mode mode) 
     }
     prev &= ~(1 << 6);                                                             /* clear config */
     prev |= mode << 6;                                                             /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_CONFIG, (uint8_t * ) & prev, 1);        /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_CONFIG, (uint8_t *) &prev, 1);        /* write config */
     if (res != 0)                                                                  /* check result */
     {
         handle->debug_print("mpu9250: write config failed.\n");                    /* write config failed */
@@ -7321,7 +7346,7 @@ uint8_t mpu9250_get_fifo_mode(mpu9250_handle_t *handle, mpu9250_fifo_mode *mode)
         return 3;                                                                  /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_CONFIG, (uint8_t * ) & prev, 1);         /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_CONFIG, (uint8_t *) &prev, 1);         /* read config */
     if (res != 0)                                                                  /* check result */
     {
         handle->debug_print("mpu9250: read config failed.\n");                     /* read config failed */
@@ -7359,7 +7384,7 @@ uint8_t mpu9250_set_gyroscope_test(mpu9250_handle_t *handle, mpu9250_axis_t axis
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t * ) & prev, 1);         /* read gyroscope config */
+    res = a_mpu9250_read(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t *) &prev, 1);         /* read gyroscope config */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print(
@@ -7369,7 +7394,7 @@ uint8_t mpu9250_set_gyroscope_test(mpu9250_handle_t *handle, mpu9250_axis_t axis
     }
     prev &= ~(1 << axis);                                                               /* clear config */
     prev |= enable << axis;                                                             /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t * ) & prev, 1);        /* write gyroscope config */
+    res = a_mpu9250_write(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t *) &prev, 1);        /* write gyroscope config */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print(
@@ -7407,7 +7432,7 @@ uint8_t mpu9250_get_gyroscope_test(mpu9250_handle_t *handle, mpu9250_axis_t axis
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t * ) & prev, 1);         /* read gyroscope config */
+    res = a_mpu9250_read(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t *) &prev, 1);         /* read gyroscope config */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print(
@@ -7445,7 +7470,7 @@ uint8_t mpu9250_set_gyroscope_range(mpu9250_handle_t *handle, mpu9250_gyroscope_
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t * ) & prev, 1);         /* read gyroscope config */
+    res = a_mpu9250_read(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t *) &prev, 1);         /* read gyroscope config */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print(
@@ -7455,7 +7480,7 @@ uint8_t mpu9250_set_gyroscope_range(mpu9250_handle_t *handle, mpu9250_gyroscope_
     }
     prev &= ~(3 << 3);                                                                  /* clear config */
     prev |= range << 3;                                                                 /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t * ) & prev, 1);        /* write gyroscope config */
+    res = a_mpu9250_write(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t *) &prev, 1);        /* write gyroscope config */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print(
@@ -7492,7 +7517,7 @@ uint8_t mpu9250_get_gyroscope_range(mpu9250_handle_t *handle, mpu9250_gyroscope_
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t * ) & prev, 1);         /* read gyroscope config */
+    res = a_mpu9250_read(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t *) &prev, 1);         /* read gyroscope config */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print(
@@ -7537,7 +7562,7 @@ uint8_t mpu9250_set_gyroscope_choice(mpu9250_handle_t *handle, uint8_t choice) {
         return 4;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t * ) & prev, 1);         /* read gyroscope config */
+    res = a_mpu9250_read(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t *) &prev, 1);         /* read gyroscope config */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print(
@@ -7547,7 +7572,7 @@ uint8_t mpu9250_set_gyroscope_choice(mpu9250_handle_t *handle, uint8_t choice) {
     }
     prev &= ~(3 << 0);                                                                  /* clear config */
     prev |= choice << 0;                                                                /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t * ) & prev, 1);        /* write gyroscope config */
+    res = a_mpu9250_write(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t *) &prev, 1);        /* write gyroscope config */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print(
@@ -7584,7 +7609,7 @@ uint8_t mpu9250_get_gyroscope_choice(mpu9250_handle_t *handle, uint8_t *choice) 
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t * ) & prev, 1);         /* read gyroscope config */
+    res = a_mpu9250_read(handle, MPU9250_REG_GYRO_CONFIG, (uint8_t *) &prev, 1);         /* read gyroscope config */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print(
@@ -7623,7 +7648,7 @@ uint8_t mpu9250_set_accelerometer_test(mpu9250_handle_t *handle, mpu9250_axis_t 
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t *) &prev,
                          1);        /* read accelerometer config */
     if (res != 0)                                                                       /* check result */
     {
@@ -7634,7 +7659,7 @@ uint8_t mpu9250_set_accelerometer_test(mpu9250_handle_t *handle, mpu9250_axis_t 
     }
     prev &= ~(1 << axis);                                                               /* clear config */
     prev |= enable << axis;                                                             /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t * ) & prev,
+    res = a_mpu9250_write(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t *) &prev,
                           1);       /* write accelerometer config */
     if (res != 0)                                                                       /* check result */
     {
@@ -7673,7 +7698,7 @@ uint8_t mpu9250_get_accelerometer_test(mpu9250_handle_t *handle, mpu9250_axis_t 
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t *) &prev,
                          1);        /* read accelerometer config */
     if (res != 0)                                                                       /* check result */
     {
@@ -7712,7 +7737,7 @@ uint8_t mpu9250_set_accelerometer_range(mpu9250_handle_t *handle, mpu9250_accele
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t *) &prev,
                          1);        /* read accelerometer config */
     if (res != 0)                                                                       /* check result */
     {
@@ -7723,7 +7748,7 @@ uint8_t mpu9250_set_accelerometer_range(mpu9250_handle_t *handle, mpu9250_accele
     }
     prev &= ~(3 << 3);                                                                  /* clear config */
     prev |= range << 3;                                                                 /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t * ) & prev,
+    res = a_mpu9250_write(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t *) &prev,
                           1);       /* write accelerometer config */
     if (res != 0)                                                                       /* check result */
     {
@@ -7761,7 +7786,7 @@ uint8_t mpu9250_get_accelerometer_range(mpu9250_handle_t *handle, mpu9250_accele
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG, (uint8_t *) &prev,
                          1);        /* read accelerometer config */
     if (res != 0)                                                                       /* check result */
     {
@@ -7799,7 +7824,7 @@ uint8_t mpu9250_set_fifo_1024kb(mpu9250_handle_t *handle) {
         return 3;                                                                         /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG2, (uint8_t * ) & prev, 1);         /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG2, (uint8_t *) &prev, 1);         /* read config */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print(
@@ -7809,7 +7834,7 @@ uint8_t mpu9250_set_fifo_1024kb(mpu9250_handle_t *handle) {
     }
     prev &= ~(1 << 6);                                                                    /* clear config */
     prev |= 1 << 6;                                                                       /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_ACCEL_CONFIG2, (uint8_t * ) & prev, 1);        /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_ACCEL_CONFIG2, (uint8_t *) &prev, 1);        /* write config */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print(
@@ -7853,7 +7878,7 @@ uint8_t mpu9250_set_accelerometer_choice(mpu9250_handle_t *handle, uint8_t choic
         return 4;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG2, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG2, (uint8_t *) &prev,
                          1);       /* read accelerometer config */
     if (res != 0)                                                                       /* check result */
     {
@@ -7864,7 +7889,7 @@ uint8_t mpu9250_set_accelerometer_choice(mpu9250_handle_t *handle, uint8_t choic
     }
     prev &= ~(1 << 3);                                                                  /* clear config */
     prev |= choice << 3;                                                                /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_ACCEL_CONFIG2, (uint8_t * ) & prev,
+    res = a_mpu9250_write(handle, MPU9250_REG_ACCEL_CONFIG2, (uint8_t *) &prev,
                           1);      /* write accelerometer config */
     if (res != 0)                                                                       /* check result */
     {
@@ -7903,7 +7928,7 @@ uint8_t mpu9250_get_accelerometer_choice(mpu9250_handle_t *handle, uint8_t *choi
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG2, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG2, (uint8_t *) &prev,
                          1);       /* read accelerometer config */
     if (res != 0)                                                                       /* check result */
     {
@@ -7943,7 +7968,7 @@ mpu9250_set_accelerometer_low_pass_filter(mpu9250_handle_t *handle, mpu9250_acce
         return 3;                                                                         /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG2, (uint8_t * ) & prev, 1);         /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG2, (uint8_t *) &prev, 1);         /* read config */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print(
@@ -7953,7 +7978,7 @@ mpu9250_set_accelerometer_low_pass_filter(mpu9250_handle_t *handle, mpu9250_acce
     }
     prev &= ~(0x7 << 0);                                                                  /* clear config */
     prev |= filter << 0;                                                                  /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_ACCEL_CONFIG2, (uint8_t * ) & prev, 1);        /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_ACCEL_CONFIG2, (uint8_t *) &prev, 1);        /* write config */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print(
@@ -7991,7 +8016,7 @@ mpu9250_get_accelerometer_low_pass_filter(mpu9250_handle_t *handle, mpu9250_acce
         return 3;                                                                         /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG2, (uint8_t * ) & prev, 1);         /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_ACCEL_CONFIG2, (uint8_t *) &prev, 1);         /* read config */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print(
@@ -8029,7 +8054,7 @@ uint8_t mpu9250_set_low_power_accel_output_rate(mpu9250_handle_t *handle, mpu925
         return 3;                                                                        /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_LP_ACCEL_ODR, (uint8_t * ) & prev, 1);         /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_LP_ACCEL_ODR, (uint8_t *) &prev, 1);         /* read config */
     if (res != 0)                                                                        /* check result */
     {
         handle->debug_print(
@@ -8039,7 +8064,7 @@ uint8_t mpu9250_set_low_power_accel_output_rate(mpu9250_handle_t *handle, mpu925
     }
     prev &= ~(0xF << 0);                                                                 /* clear config */
     prev |= rate << 0;                                                                   /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_LP_ACCEL_ODR, (uint8_t * ) & prev, 1);        /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_LP_ACCEL_ODR, (uint8_t *) &prev, 1);        /* write config */
     if (res != 0)                                                                        /* check result */
     {
         handle->debug_print(
@@ -8076,7 +8101,7 @@ uint8_t mpu9250_get_low_power_accel_output_rate(mpu9250_handle_t *handle, mpu925
         return 3;                                                                        /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_LP_ACCEL_ODR, (uint8_t * ) & prev, 1);         /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_LP_ACCEL_ODR, (uint8_t *) &prev, 1);         /* read config */
     if (res != 0)                                                                        /* check result */
     {
         handle->debug_print(
@@ -8114,7 +8139,7 @@ uint8_t mpu9250_set_wake_on_motion(mpu9250_handle_t *handle, mpu9250_bool_t enab
         return 3;                                                                           /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_MOT_DETECT_CTRL, (uint8_t * ) & prev, 1);         /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_MOT_DETECT_CTRL, (uint8_t *) &prev, 1);         /* read config */
     if (res != 0)                                                                           /* check result */
     {
         handle->debug_print(
@@ -8124,7 +8149,7 @@ uint8_t mpu9250_set_wake_on_motion(mpu9250_handle_t *handle, mpu9250_bool_t enab
     }
     prev &= ~(1 << 7);                                                                      /* clear config */
     prev |= enable << 7;                                                                    /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_MOT_DETECT_CTRL, (uint8_t * ) & prev, 1);        /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_MOT_DETECT_CTRL, (uint8_t *) &prev, 1);        /* write config */
     if (res != 0)                                                                           /* check result */
     {
         handle->debug_print(
@@ -8161,7 +8186,7 @@ uint8_t mpu9250_get_wake_on_motion(mpu9250_handle_t *handle, mpu9250_bool_t *ena
         return 3;                                                                           /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_MOT_DETECT_CTRL, (uint8_t * ) & prev, 1);         /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_MOT_DETECT_CTRL, (uint8_t *) &prev, 1);         /* read config */
     if (res != 0)                                                                           /* check result */
     {
         handle->debug_print(
@@ -8199,7 +8224,7 @@ uint8_t mpu9250_set_accel_compare_with_previous_sample(mpu9250_handle_t *handle,
         return 3;                                                                           /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_MOT_DETECT_CTRL, (uint8_t * ) & prev, 1);         /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_MOT_DETECT_CTRL, (uint8_t *) &prev, 1);         /* read config */
     if (res != 0)                                                                           /* check result */
     {
         handle->debug_print(
@@ -8209,7 +8234,7 @@ uint8_t mpu9250_set_accel_compare_with_previous_sample(mpu9250_handle_t *handle,
     }
     prev &= ~(1 << 6);                                                                      /* clear config */
     prev |= enable << 6;                                                                    /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_MOT_DETECT_CTRL, (uint8_t * ) & prev, 1);        /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_MOT_DETECT_CTRL, (uint8_t *) &prev, 1);        /* write config */
     if (res != 0)                                                                           /* check result */
     {
         handle->debug_print(
@@ -8246,7 +8271,7 @@ uint8_t mpu9250_get_accel_compare_with_previous_sample(mpu9250_handle_t *handle,
         return 3;                                                                           /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_MOT_DETECT_CTRL, (uint8_t * ) & prev, 1);         /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_MOT_DETECT_CTRL, (uint8_t *) &prev, 1);         /* read config */
     if (res != 0)                                                                           /* check result */
     {
         handle->debug_print(
@@ -8284,7 +8309,7 @@ uint8_t mpu9250_set_fifo_enable(mpu9250_handle_t *handle, mpu9250_fifo_t fifo, m
         return 3;                                                                   /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_FIFO_EN, (uint8_t * ) & prev, 1);         /* read fifo enable config */
+    res = a_mpu9250_read(handle, MPU9250_REG_FIFO_EN, (uint8_t *) &prev, 1);         /* read fifo enable config */
     if (res != 0)                                                                   /* check result */
     {
         handle->debug_print("mpu9250: read fifo enable config failed.\n");          /* read fifo enable config failed */
@@ -8293,7 +8318,7 @@ uint8_t mpu9250_set_fifo_enable(mpu9250_handle_t *handle, mpu9250_fifo_t fifo, m
     }
     prev &= ~(1 << fifo);                                                           /* clear config */
     prev |= enable << fifo;                                                         /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_FIFO_EN, (uint8_t * ) & prev, 1);        /* write fifo enable config */
+    res = a_mpu9250_write(handle, MPU9250_REG_FIFO_EN, (uint8_t *) &prev, 1);        /* write fifo enable config */
     if (res != 0)                                                                   /* check result */
     {
         handle->debug_print(
@@ -8330,7 +8355,7 @@ uint8_t mpu9250_get_fifo_enable(mpu9250_handle_t *handle, mpu9250_fifo_t fifo, m
         return 3;                                                                   /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_FIFO_EN, (uint8_t * ) & prev, 1);         /* read fifo enable config */
+    res = a_mpu9250_read(handle, MPU9250_REG_FIFO_EN, (uint8_t *) &prev, 1);         /* read fifo enable config */
     if (res != 0)                                                                   /* check result */
     {
         handle->debug_print("mpu9250: read fifo enable config failed.\n");          /* read fifo enable config failed */
@@ -8367,7 +8392,7 @@ uint8_t mpu9250_set_interrupt_level(mpu9250_handle_t *handle, mpu9250_pin_level_
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev,
                          1);         /* read interrupt pin config */
     if (res != 0)                                                                       /* check result */
     {
@@ -8377,7 +8402,7 @@ uint8_t mpu9250_set_interrupt_level(mpu9250_handle_t *handle, mpu9250_pin_level_
     }
     prev &= ~(1 << 7);                                                                  /* clear config */
     prev |= level << 7;                                                                 /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev, 1);        /* write interrupt pin */
+    res = a_mpu9250_write(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev, 1);        /* write interrupt pin */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print("mpu9250: write interrupt pin failed.\n");                  /* write interrupt pin failed */
@@ -8413,7 +8438,7 @@ uint8_t mpu9250_get_interrupt_level(mpu9250_handle_t *handle, mpu9250_pin_level_
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev,
                          1);         /* read interrupt pin config */
     if (res != 0)                                                                       /* check result */
     {
@@ -8451,7 +8476,7 @@ uint8_t mpu9250_set_interrupt_pin_type(mpu9250_handle_t *handle, mpu9250_pin_typ
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev,
                          1);         /* read interrupt pin config */
     if (res != 0)                                                                       /* check result */
     {
@@ -8461,7 +8486,7 @@ uint8_t mpu9250_set_interrupt_pin_type(mpu9250_handle_t *handle, mpu9250_pin_typ
     }
     prev &= ~(1 << 6);                                                                  /* clear config */
     prev |= type << 6;                                                                  /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev, 1);        /* write interrupt pin */
+    res = a_mpu9250_write(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev, 1);        /* write interrupt pin */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print("mpu9250: write interrupt pin failed.\n");                  /* write interrupt pin failed */
@@ -8497,7 +8522,7 @@ uint8_t mpu9250_get_interrupt_pin_type(mpu9250_handle_t *handle, mpu9250_pin_typ
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev,
                          1);         /* read interrupt pin config */
     if (res != 0)                                                                       /* check result */
     {
@@ -8535,7 +8560,7 @@ uint8_t mpu9250_set_interrupt_latch(mpu9250_handle_t *handle, mpu9250_bool_t ena
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev,
                          1);         /* read interrupt pin config */
     if (res != 0)                                                                       /* check result */
     {
@@ -8545,7 +8570,7 @@ uint8_t mpu9250_set_interrupt_latch(mpu9250_handle_t *handle, mpu9250_bool_t ena
     }
     prev &= ~(1 << 5);                                                                  /* clear config */
     prev |= (!enable) << 5;                                                             /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev, 1);        /* write interrupt pin */
+    res = a_mpu9250_write(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev, 1);        /* write interrupt pin */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print("mpu9250: write interrupt pin failed.\n");                  /* write interrupt pin failed */
@@ -8581,7 +8606,7 @@ uint8_t mpu9250_get_interrupt_latch(mpu9250_handle_t *handle, mpu9250_bool_t *en
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev,
                          1);         /* read interrupt pin config */
     if (res != 0)                                                                       /* check result */
     {
@@ -8619,7 +8644,7 @@ uint8_t mpu9250_set_interrupt_read_clear(mpu9250_handle_t *handle, mpu9250_bool_
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev,
                          1);         /* read interrupt pin config */
     if (res != 0)                                                                       /* check result */
     {
@@ -8629,7 +8654,7 @@ uint8_t mpu9250_set_interrupt_read_clear(mpu9250_handle_t *handle, mpu9250_bool_
     }
     prev &= ~(1 << 4);                                                                  /* clear config */
     prev |= enable << 4;                                                                /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev, 1);        /* write interrupt pin */
+    res = a_mpu9250_write(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev, 1);        /* write interrupt pin */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print("mpu9250: write interrupt pin failed.\n");                  /* write interrupt pin failed */
@@ -8665,7 +8690,7 @@ uint8_t mpu9250_get_interrupt_read_clear(mpu9250_handle_t *handle, mpu9250_bool_
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev,
                          1);         /* read interrupt pin config */
     if (res != 0)                                                                       /* check result */
     {
@@ -8703,7 +8728,7 @@ uint8_t mpu9250_set_fsync_interrupt_level(mpu9250_handle_t *handle, mpu9250_pin_
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev,
                          1);         /* read interrupt pin config */
     if (res != 0)                                                                       /* check result */
     {
@@ -8713,7 +8738,7 @@ uint8_t mpu9250_set_fsync_interrupt_level(mpu9250_handle_t *handle, mpu9250_pin_
     }
     prev &= ~(1 << 3);                                                                  /* clear config */
     prev |= level << 3;                                                                 /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev, 1);        /* write interrupt pin */
+    res = a_mpu9250_write(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev, 1);        /* write interrupt pin */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print("mpu9250: write interrupt pin failed.\n");                  /* write interrupt pin failed */
@@ -8749,7 +8774,7 @@ uint8_t mpu9250_get_fsync_interrupt_level(mpu9250_handle_t *handle, mpu9250_pin_
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev,
                          1);         /* read interrupt pin config */
     if (res != 0)                                                                       /* check result */
     {
@@ -8787,7 +8812,7 @@ uint8_t mpu9250_set_fsync_interrupt(mpu9250_handle_t *handle, mpu9250_bool_t ena
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev,
                          1);         /* read interrupt pin config */
     if (res != 0)                                                                       /* check result */
     {
@@ -8797,7 +8822,7 @@ uint8_t mpu9250_set_fsync_interrupt(mpu9250_handle_t *handle, mpu9250_bool_t ena
     }
     prev &= ~(1 << 2);                                                                  /* clear config */
     prev |= enable << 2;                                                                /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev, 1);        /* write interrupt pin */
+    res = a_mpu9250_write(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev, 1);        /* write interrupt pin */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print("mpu9250: write interrupt pin failed.\n");                  /* write interrupt pin failed */
@@ -8833,7 +8858,7 @@ uint8_t mpu9250_get_fsync_interrupt(mpu9250_handle_t *handle, mpu9250_bool_t *en
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev,
                          1);         /* read interrupt pin config */
     if (res != 0)                                                                       /* check result */
     {
@@ -8871,7 +8896,7 @@ uint8_t mpu9250_set_iic_bypass(mpu9250_handle_t *handle, mpu9250_bool_t enable) 
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev, 1);         /* read interrupt pin */
+    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev, 1);         /* read interrupt pin */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print("mpu9250: read interrupt pin failed.\n");                   /* read interrupt pin failed */
@@ -8880,7 +8905,7 @@ uint8_t mpu9250_set_iic_bypass(mpu9250_handle_t *handle, mpu9250_bool_t enable) 
     }
     prev &= ~(1 << 1);                                                                  /* clear config */
     prev |= enable << 1;                                                                /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev, 1);        /* write interrupt pin */
+    res = a_mpu9250_write(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev, 1);        /* write interrupt pin */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print("mpu9250: write interrupt pin failed.\n");                  /* write interrupt pin failed */
@@ -8916,7 +8941,7 @@ uint8_t mpu9250_get_iic_bypass(mpu9250_handle_t *handle, mpu9250_bool_t *enable)
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t * ) & prev, 1);         /* read interrupt pin */
+    res = a_mpu9250_read(handle, MPU9250_REG_INT_PIN_CFG, (uint8_t *) &prev, 1);         /* read interrupt pin */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print("mpu9250: read interrupt pin failed.\n");                   /* read interrupt pin failed */
@@ -8954,7 +8979,7 @@ uint8_t mpu9250_set_interrupt(mpu9250_handle_t *handle, mpu9250_interrupt_t type
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_INT_ENABLE, (uint8_t * ) & prev, 1);          /* read interrupt enable */
+    res = a_mpu9250_read(handle, MPU9250_REG_INT_ENABLE, (uint8_t *) &prev, 1);          /* read interrupt enable */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print(
@@ -8964,7 +8989,7 @@ uint8_t mpu9250_set_interrupt(mpu9250_handle_t *handle, mpu9250_interrupt_t type
     }
     prev &= ~(1 << type);                                                               /* clear config */
     prev |= enable << type;                                                             /* set config */
-    res = a_mpu9250_write(handle, MPU9250_REG_INT_ENABLE, (uint8_t * ) & prev, 1);         /* write interrupt enable */
+    res = a_mpu9250_write(handle, MPU9250_REG_INT_ENABLE, (uint8_t *) &prev, 1);         /* write interrupt enable */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print(
@@ -9002,7 +9027,7 @@ uint8_t mpu9250_get_interrupt(mpu9250_handle_t *handle, mpu9250_interrupt_t type
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_INT_ENABLE, (uint8_t * ) & prev, 1);          /* read interrupt enable */
+    res = a_mpu9250_read(handle, MPU9250_REG_INT_ENABLE, (uint8_t *) &prev, 1);          /* read interrupt enable */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print(
@@ -9075,7 +9100,7 @@ uint8_t mpu9250_set_gyroscope_x_test(mpu9250_handle_t *handle, uint8_t data) {
         return 3;                                                                         /* return error */
     }
 
-    res = a_mpu9250_write(handle, MPU9250_REG_SELF_TEST_X_GYRO, (uint8_t * ) & data, 1);     /* write self test x */
+    res = a_mpu9250_write(handle, MPU9250_REG_SELF_TEST_X_GYRO, (uint8_t *) &data, 1);     /* write self test x */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print("mpu9250: write self test x failed.\n");                      /* write self test x failed */
@@ -9145,7 +9170,7 @@ uint8_t mpu9250_set_gyroscope_y_test(mpu9250_handle_t *handle, uint8_t data) {
         return 3;                                                                         /* return error */
     }
 
-    res = a_mpu9250_write(handle, MPU9250_REG_SELF_TEST_Y_GYRO, (uint8_t * ) & data, 1);     /* write self test y */
+    res = a_mpu9250_write(handle, MPU9250_REG_SELF_TEST_Y_GYRO, (uint8_t *) &data, 1);     /* write self test y */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print("mpu9250: write self test y failed.\n");                      /* write self test y failed */
@@ -9215,7 +9240,7 @@ uint8_t mpu9250_set_gyroscope_z_test(mpu9250_handle_t *handle, uint8_t data) {
         return 3;                                                                         /* return error */
     }
 
-    res = a_mpu9250_write(handle, MPU9250_REG_SELF_TEST_Z_GYRO, (uint8_t * ) & data, 1);     /* write self test z */
+    res = a_mpu9250_write(handle, MPU9250_REG_SELF_TEST_Z_GYRO, (uint8_t *) &data, 1);     /* write self test z */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print("mpu9250: write self test z failed.\n");                      /* write self test z failed */
@@ -9285,7 +9310,7 @@ uint8_t mpu9250_set_accelerometer_x_test(mpu9250_handle_t *handle, uint8_t data)
         return 3;                                                                         /* return error */
     }
 
-    res = a_mpu9250_write(handle, MPU9250_REG_SELF_TEST_X_ACCEL, (uint8_t * ) & data, 1);    /* write self test x */
+    res = a_mpu9250_write(handle, MPU9250_REG_SELF_TEST_X_ACCEL, (uint8_t *) &data, 1);    /* write self test x */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print("mpu9250: write self test x failed.\n");                      /* write self test x failed */
@@ -9355,7 +9380,7 @@ uint8_t mpu9250_set_accelerometer_y_test(mpu9250_handle_t *handle, uint8_t data)
         return 3;                                                                         /* return error */
     }
 
-    res = a_mpu9250_write(handle, MPU9250_REG_SELF_TEST_Y_ACCEL, (uint8_t * ) & data, 1);    /* write self test y */
+    res = a_mpu9250_write(handle, MPU9250_REG_SELF_TEST_Y_ACCEL, (uint8_t *) &data, 1);    /* write self test y */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print("mpu9250: write self test y failed.\n");                      /* write self test y failed */
@@ -9425,7 +9450,7 @@ uint8_t mpu9250_set_accelerometer_z_test(mpu9250_handle_t *handle, uint8_t data)
         return 3;                                                                         /* return error */
     }
 
-    res = a_mpu9250_write(handle, MPU9250_REG_SELF_TEST_Z_ACCEL, (uint8_t * ) & data, 1);    /* write self test z */
+    res = a_mpu9250_write(handle, MPU9250_REG_SELF_TEST_Z_ACCEL, (uint8_t *) &data, 1);    /* write self test z */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print("mpu9250: write self test z failed.\n");                      /* write self test z failed */
@@ -9539,7 +9564,7 @@ uint8_t mpu9250_get_accelerometer_x_offset(mpu9250_handle_t *handle, int16_t *of
 
         return 1;                                                         /* return error */
     }
-    *offset = (int16_t)(((uint16_t) buf[0] << 8) | buf[1]);                /* set the offset */
+    *offset = (int16_t) (((uint16_t) buf[0] << 8) | buf[1]);                /* set the offset */
 
     return 0;                                                             /* success return 0 */
 }
@@ -9612,7 +9637,7 @@ uint8_t mpu9250_get_accelerometer_y_offset(mpu9250_handle_t *handle, int16_t *of
 
         return 1;                                                         /* return error */
     }
-    *offset = (int16_t)(((uint16_t) buf[0] << 8) | buf[1]);                /* set the offset */
+    *offset = (int16_t) (((uint16_t) buf[0] << 8) | buf[1]);                /* set the offset */
 
     return 0;                                                             /* success return 0 */
 }
@@ -9685,7 +9710,7 @@ uint8_t mpu9250_get_accelerometer_z_offset(mpu9250_handle_t *handle, int16_t *of
 
         return 1;                                                         /* return error */
     }
-    *offset = (int16_t)(((uint16_t) buf[0] << 8) | buf[1]);                /* set the offset */
+    *offset = (int16_t) (((uint16_t) buf[0] << 8) | buf[1]);                /* set the offset */
 
     return 0;                                                             /* success return 0 */
 }
@@ -9711,7 +9736,7 @@ uint8_t mpu9250_accelerometer_offset_convert_to_register(mpu9250_handle_t *handl
         return 3;                       /* return error */
     }
 
-    *reg = (int16_t)(mg / 0.98f);       /* convert real data to register data */
+    *reg = (int16_t) (mg / 0.98f);       /* convert real data to register data */
 
     return 0;                           /* success return 0 */
 }
@@ -9810,7 +9835,7 @@ uint8_t mpu9250_get_gyro_x_offset(mpu9250_handle_t *handle, int16_t *offset) {
 
         return 1;                                                         /* return error */
     }
-    *offset = (int16_t)(((uint16_t) buf[0] << 8) | buf[1]);                /* set the offset */
+    *offset = (int16_t) (((uint16_t) buf[0] << 8) | buf[1]);                /* set the offset */
 
     return 0;                                                             /* success return 0 */
 }
@@ -9883,7 +9908,7 @@ uint8_t mpu9250_get_gyro_y_offset(mpu9250_handle_t *handle, int16_t *offset) {
 
         return 1;                                                         /* return error */
     }
-    *offset = (int16_t)(((uint16_t) buf[0] << 8) | buf[1]);                /* set the offset */
+    *offset = (int16_t) (((uint16_t) buf[0] << 8) | buf[1]);                /* set the offset */
 
     return 0;                                                             /* success return 0 */
 }
@@ -9956,7 +9981,7 @@ uint8_t mpu9250_get_gyro_z_offset(mpu9250_handle_t *handle, int16_t *offset) {
 
         return 1;                                                         /* return error */
     }
-    *offset = (int16_t)(((uint16_t) buf[0] << 8) | buf[1]);                /* set the offset */
+    *offset = (int16_t) (((uint16_t) buf[0] << 8) | buf[1]);                /* set the offset */
 
     return 0;                                                             /* success return 0 */
 }
@@ -9982,7 +10007,7 @@ uint8_t mpu9250_gyro_offset_convert_to_register(mpu9250_handle_t *handle, float 
         return 3;                           /* return error */
     }
 
-    *reg = (int16_t)(dps / 0.0305f);        /* convert real data to register data */
+    *reg = (int16_t) (dps / 0.0305f);        /* convert real data to register data */
 
     return 0;                               /* success return 0 */
 }
@@ -10037,7 +10062,7 @@ uint8_t mpu9250_set_motion_threshold(mpu9250_handle_t *handle, uint8_t threshold
         return 3;                                                                        /* return error */
     }
 
-    res = a_mpu9250_write(handle, MPU9250_REG_WOM_THR, (uint8_t * ) & threshold, 1);        /* write motion threshold */
+    res = a_mpu9250_write(handle, MPU9250_REG_WOM_THR, (uint8_t *) &threshold, 1);        /* write motion threshold */
     if (res != 0)                                                                        /* check result */
     {
         handle->debug_print(
@@ -10104,7 +10129,7 @@ uint8_t mpu9250_motion_threshold_convert_to_register(mpu9250_handle_t *handle, f
         return 3;                       /* return error */
     }
 
-    *reg = (uint8_t)(mg / 4.0f);        /* convert real data to register data */
+    *reg = (uint8_t) (mg / 4.0f);        /* convert real data to register data */
 
     return 0;                           /* success return 0 */
 }
@@ -10201,7 +10226,7 @@ uint8_t mpu9250_self_test(mpu9250_handle_t *handle, int32_t gyro_offset_raw[3], 
         return 1;                                                                          /* return error */
     }
     handle->delay_ms(100);                                                                 /* delay 100ms */
-    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t * ) & prev, 1);             /* read config */
+    res = a_mpu9250_read(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t *) &prev, 1);             /* read config */
     if (res != 0)                                                                          /* check result */
     {
         handle->debug_print(
@@ -10210,7 +10235,7 @@ uint8_t mpu9250_self_test(mpu9250_handle_t *handle, int32_t gyro_offset_raw[3], 
         return 1;                                                                          /* return error */
     }
     prev &= ~(1 << 6);                                                                     /* clear config */
-    res = a_mpu9250_write(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t * ) & prev, 1);            /* write config */
+    res = a_mpu9250_write(handle, MPU9250_REG_PWR_MGMT_1, (uint8_t *) &prev, 1);            /* write config */
     if (res != 0)                                                                          /* check result */
     {
         handle->debug_print(
@@ -10247,7 +10272,7 @@ uint8_t mpu9250_set_iic_clock(mpu9250_handle_t *handle, mpu9250_iic_clock_t clk)
         return 3;                                                                        /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t * ) & prev, 1);         /* read i2c mst ctrl */
+    res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t *) &prev, 1);         /* read i2c mst ctrl */
     if (res != 0)                                                                        /* check result */
     {
         handle->debug_print("mpu9250: read i2c mst ctrl failed.\n");                     /* read i2c mst ctrl failed */
@@ -10256,7 +10281,7 @@ uint8_t mpu9250_set_iic_clock(mpu9250_handle_t *handle, mpu9250_iic_clock_t clk)
     }
     prev &= ~0xF;                                                                        /* clear the buffer */
     prev |= clk;                                                                         /* set the clock */
-    res = a_mpu9250_write(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t * ) & prev, 1);        /* write i2c mst ctrl */
+    res = a_mpu9250_write(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t *) &prev, 1);        /* write i2c mst ctrl */
     if (res != 0)                                                                        /* check result */
     {
         handle->debug_print("mpu9250: write i2c mst ctrl failed.\n");                    /* write i2c mst ctrl failed */
@@ -10292,7 +10317,7 @@ uint8_t mpu9250_get_iic_clock(mpu9250_handle_t *handle, mpu9250_iic_clock_t *clk
         return 3;                                                                        /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t * ) & prev, 1);         /* read i2c mst ctrl */
+    res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t *) &prev, 1);         /* read i2c mst ctrl */
     if (res != 0)                                                                        /* check result */
     {
         handle->debug_print("mpu9250: read i2c mst ctrl failed.\n");                     /* read i2c mst ctrl failed */
@@ -10329,7 +10354,7 @@ uint8_t mpu9250_set_iic_multi_master(mpu9250_handle_t *handle, mpu9250_bool_t en
         return 3;                                                                        /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t * ) & prev, 1);         /* read i2c mst ctrl */
+    res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t *) &prev, 1);         /* read i2c mst ctrl */
     if (res != 0)                                                                        /* check result */
     {
         handle->debug_print("mpu9250: read i2c mst ctrl failed.\n");                     /* read i2c mst ctrl failed */
@@ -10338,7 +10363,7 @@ uint8_t mpu9250_set_iic_multi_master(mpu9250_handle_t *handle, mpu9250_bool_t en
     }
     prev &= ~(1 << 7);                                                                   /* clear the settings */
     prev |= enable << 7;                                                                 /* set the bool */
-    res = a_mpu9250_write(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t * ) & prev, 1);        /* write i2c mst ctrl */
+    res = a_mpu9250_write(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t *) &prev, 1);        /* write i2c mst ctrl */
     if (res != 0)                                                                        /* check result */
     {
         handle->debug_print("mpu9250: write i2c mst ctrl failed.\n");                    /* write i2c mst ctrl failed */
@@ -10374,7 +10399,7 @@ uint8_t mpu9250_get_iic_multi_master(mpu9250_handle_t *handle, mpu9250_bool_t *e
         return 3;                                                                        /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t * ) & prev, 1);         /* read i2c mst ctrl */
+    res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t *) &prev, 1);         /* read i2c mst ctrl */
     if (res != 0)                                                                        /* check result */
     {
         handle->debug_print("mpu9250: read i2c mst ctrl failed.\n");                     /* read i2c mst ctrl failed */
@@ -10411,7 +10436,7 @@ uint8_t mpu9250_set_iic_wait_for_external_sensor(mpu9250_handle_t *handle, mpu92
         return 3;                                                                        /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t * ) & prev, 1);         /* read i2c mst ctrl */
+    res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t *) &prev, 1);         /* read i2c mst ctrl */
     if (res != 0)                                                                        /* check result */
     {
         handle->debug_print("mpu9250: read i2c mst ctrl failed.\n");                     /* read i2c mst ctrl failed */
@@ -10420,7 +10445,7 @@ uint8_t mpu9250_set_iic_wait_for_external_sensor(mpu9250_handle_t *handle, mpu92
     }
     prev &= ~(1 << 6);                                                                   /* clear the settings */
     prev |= enable << 6;                                                                 /* set the bool */
-    res = a_mpu9250_write(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t * ) & prev, 1);        /* write i2c mst ctrl */
+    res = a_mpu9250_write(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t *) &prev, 1);        /* write i2c mst ctrl */
     if (res != 0)                                                                        /* check result */
     {
         handle->debug_print("mpu9250: write i2c mst ctrl failed.\n");                    /* write i2c mst ctrl failed */
@@ -10456,7 +10481,7 @@ uint8_t mpu9250_get_iic_wait_for_external_sensor(mpu9250_handle_t *handle, mpu92
         return 3;                                                                        /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t * ) & prev, 1);         /* read i2c mst ctrl */
+    res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t *) &prev, 1);         /* read i2c mst ctrl */
     if (res != 0)                                                                        /* check result */
     {
         handle->debug_print("mpu9250: read i2c mst ctrl failed.\n");                     /* read i2c mst ctrl failed */
@@ -10493,7 +10518,7 @@ uint8_t mpu9250_set_iic_read_mode(mpu9250_handle_t *handle, mpu9250_iic_read_mod
         return 3;                                                                        /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t * ) & prev, 1);         /* read i2c mst ctrl */
+    res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t *) &prev, 1);         /* read i2c mst ctrl */
     if (res != 0)                                                                        /* check result */
     {
         handle->debug_print("mpu9250: read i2c mst ctrl failed.\n");                     /* read i2c mst ctrl failed */
@@ -10502,7 +10527,7 @@ uint8_t mpu9250_set_iic_read_mode(mpu9250_handle_t *handle, mpu9250_iic_read_mod
     }
     prev &= ~(1 << 4);                                                                   /* clear the settings */
     prev |= mode << 4;                                                                   /* set the mode */
-    res = a_mpu9250_write(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t * ) & prev, 1);        /* write i2c mst ctrl */
+    res = a_mpu9250_write(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t *) &prev, 1);        /* write i2c mst ctrl */
     if (res != 0)                                                                        /* check result */
     {
         handle->debug_print("mpu9250: write i2c mst ctrl failed.\n");                    /* write i2c mst ctrl failed */
@@ -10538,7 +10563,7 @@ uint8_t mpu9250_get_iic_read_mode(mpu9250_handle_t *handle, mpu9250_iic_read_mod
         return 3;                                                                        /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t * ) & prev, 1);         /* read i2c mst ctrl */
+    res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t *) &prev, 1);         /* read i2c mst ctrl */
     if (res != 0)                                                                        /* check result */
     {
         handle->debug_print("mpu9250: read i2c mst ctrl failed.\n");                     /* read i2c mst ctrl failed */
@@ -10582,7 +10607,7 @@ uint8_t mpu9250_set_iic_fifo_enable(mpu9250_handle_t *handle, mpu9250_iic_slave_
         (slave == MPU9250_IIC_SLAVE_2)
             )                                                                                    /* slave0-2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_FIFO_EN, (uint8_t * ) & prev, 1);             /* read fifo enable */
+        res = a_mpu9250_read(handle, MPU9250_REG_FIFO_EN, (uint8_t *) &prev, 1);             /* read fifo enable */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10592,7 +10617,7 @@ uint8_t mpu9250_set_iic_fifo_enable(mpu9250_handle_t *handle, mpu9250_iic_slave_
         }
         prev &= ~(1 << slave);                                                              /* clear the settings */
         prev |= enable << slave;                                                            /* set the bool */
-        res = a_mpu9250_write(handle, MPU9250_REG_FIFO_EN, (uint8_t * ) & prev,
+        res = a_mpu9250_write(handle, MPU9250_REG_FIFO_EN, (uint8_t *) &prev,
                               1);            /* write fifo enable ctrl */
         if (res != 0)                                                                       /* check result */
         {
@@ -10603,7 +10628,7 @@ uint8_t mpu9250_set_iic_fifo_enable(mpu9250_handle_t *handle, mpu9250_iic_slave_
         }
     } else if (slave == MPU9250_IIC_SLAVE_3)                                                  /* slave3 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t * ) & prev, 1);        /* read i2c mst ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t *) &prev, 1);        /* read i2c mst ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10613,7 +10638,7 @@ uint8_t mpu9250_set_iic_fifo_enable(mpu9250_handle_t *handle, mpu9250_iic_slave_
         }
         prev &= ~(1 << 5);                                                                  /* clear the settings */
         prev |= enable << 5;                                                                /* set the bool */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t * ) & prev, 1);       /* write i2c mst ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t *) &prev, 1);       /* write i2c mst ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10662,7 +10687,7 @@ uint8_t mpu9250_get_iic_fifo_enable(mpu9250_handle_t *handle, mpu9250_iic_slave_
         (slave == MPU9250_IIC_SLAVE_2)
             )                                                                                    /* slave0-2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_FIFO_EN, (uint8_t * ) & prev, 1);             /* read fifo enable */
+        res = a_mpu9250_read(handle, MPU9250_REG_FIFO_EN, (uint8_t *) &prev, 1);             /* read fifo enable */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10673,7 +10698,7 @@ uint8_t mpu9250_get_iic_fifo_enable(mpu9250_handle_t *handle, mpu9250_iic_slave_
         *enable = (mpu9250_bool_t) ((prev >> slave) & 0x1);                                  /* get the bool */
     } else if (slave == MPU9250_IIC_SLAVE_3)                                                  /* slave3 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t * ) & prev, 1);        /* read i2c mst ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_CTRL, (uint8_t *) &prev, 1);        /* read i2c mst ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10720,7 +10745,7 @@ uint8_t mpu9250_set_iic_mode(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave
 
     if (slave == MPU9250_IIC_SLAVE_0)                                                       /* slave0 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_ADDR, (uint8_t * ) & prev, 1);       /* read i2c slv0 addr */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_ADDR, (uint8_t *) &prev, 1);       /* read i2c slv0 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10730,7 +10755,7 @@ uint8_t mpu9250_set_iic_mode(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave
         }
         prev &= ~(1 << 7);                                                                  /* clear the settings */
         prev |= mode << 7;                                                                  /* set the bool */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_ADDR, (uint8_t * ) & prev, 1);      /* write i2c slv0 addr */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_ADDR, (uint8_t *) &prev, 1);      /* write i2c slv0 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10740,7 +10765,7 @@ uint8_t mpu9250_set_iic_mode(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave
         }
     } else if (slave == MPU9250_IIC_SLAVE_1)                                                  /* slave1 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_ADDR, (uint8_t * ) & prev, 1);       /* read i2c slv1 addr */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_ADDR, (uint8_t *) &prev, 1);       /* read i2c slv1 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10750,7 +10775,7 @@ uint8_t mpu9250_set_iic_mode(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave
         }
         prev &= ~(1 << 7);                                                                  /* clear the settings */
         prev |= mode << 7;                                                                  /* set the bool */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV1_ADDR, (uint8_t * ) & prev, 1);      /* write i2c slv1 addr */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV1_ADDR, (uint8_t *) &prev, 1);      /* write i2c slv1 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10760,7 +10785,7 @@ uint8_t mpu9250_set_iic_mode(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave
         }
     } else if (slave == MPU9250_IIC_SLAVE_2)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_ADDR, (uint8_t * ) & prev, 1);       /* read i2c slv2 addr */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_ADDR, (uint8_t *) &prev, 1);       /* read i2c slv2 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10770,7 +10795,7 @@ uint8_t mpu9250_set_iic_mode(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave
         }
         prev &= ~(1 << 7);                                                                  /* clear the settings */
         prev |= mode << 7;                                                                  /* set the bool */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV2_ADDR, (uint8_t * ) & prev, 1);      /* write i2c slv2 addr */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV2_ADDR, (uint8_t *) &prev, 1);      /* write i2c slv2 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10780,7 +10805,7 @@ uint8_t mpu9250_set_iic_mode(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave
         }
     } else if (slave == MPU9250_IIC_SLAVE_3)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_ADDR, (uint8_t * ) & prev, 1);       /* read i2c slv3 addr */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_ADDR, (uint8_t *) &prev, 1);       /* read i2c slv3 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10790,7 +10815,7 @@ uint8_t mpu9250_set_iic_mode(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave
         }
         prev &= ~(1 << 7);                                                                  /* clear the settings */
         prev |= mode << 7;                                                                  /* set the bool */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV3_ADDR, (uint8_t * ) & prev, 1);      /* write i2c slv3 addr */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV3_ADDR, (uint8_t *) &prev, 1);      /* write i2c slv3 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10800,7 +10825,7 @@ uint8_t mpu9250_set_iic_mode(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave
         }
     } else if (slave == MPU9250_IIC_SLAVE_4)                                                  /* slave4 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_ADDR, (uint8_t * ) & prev, 1);       /* read i2c slv4 addr */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_ADDR, (uint8_t *) &prev, 1);       /* read i2c slv4 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10810,7 +10835,7 @@ uint8_t mpu9250_set_iic_mode(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave
         }
         prev &= ~(1 << 7);                                                                  /* clear the settings */
         prev |= mode << 7;                                                                  /* set the bool */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV4_ADDR, (uint8_t * ) & prev, 1);      /* write i2c slv4 addr */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV4_ADDR, (uint8_t *) &prev, 1);      /* write i2c slv4 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10856,7 +10881,7 @@ uint8_t mpu9250_get_iic_mode(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave
 
     if (slave == MPU9250_IIC_SLAVE_0)                                                       /* slave0 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_ADDR, (uint8_t * ) & prev, 1);       /* read i2c slv0 addr */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_ADDR, (uint8_t *) &prev, 1);       /* read i2c slv0 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10867,7 +10892,7 @@ uint8_t mpu9250_get_iic_mode(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave
         *mode = (mpu9250_iic_mode_t) ((prev >> 7) & 0x1);                                    /* get the mode */
     } else if (slave == MPU9250_IIC_SLAVE_1)                                                  /* slave1 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_ADDR, (uint8_t * ) & prev, 1);       /* read i2c slv1 addr */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_ADDR, (uint8_t *) &prev, 1);       /* read i2c slv1 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10878,7 +10903,7 @@ uint8_t mpu9250_get_iic_mode(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave
         *mode = (mpu9250_iic_mode_t) ((prev >> 7) & 0x1);                                    /* get the mode */
     } else if (slave == MPU9250_IIC_SLAVE_2)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_ADDR, (uint8_t * ) & prev, 1);       /* read i2c slv2 addr */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_ADDR, (uint8_t *) &prev, 1);       /* read i2c slv2 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10889,7 +10914,7 @@ uint8_t mpu9250_get_iic_mode(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave
         *mode = (mpu9250_iic_mode_t) ((prev >> 7) & 0x1);                                    /* get the mode */
     } else if (slave == MPU9250_IIC_SLAVE_3)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_ADDR, (uint8_t * ) & prev, 1);       /* read i2c slv3 addr */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_ADDR, (uint8_t *) &prev, 1);       /* read i2c slv3 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10900,7 +10925,7 @@ uint8_t mpu9250_get_iic_mode(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave
         *mode = (mpu9250_iic_mode_t) ((prev >> 7) & 0x1);                                    /* get the mode */
     } else if (slave == MPU9250_IIC_SLAVE_4)                                                  /* slave4 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_ADDR, (uint8_t * ) & prev, 1);       /* read i2c slv4 addr */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_ADDR, (uint8_t *) &prev, 1);       /* read i2c slv4 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10947,7 +10972,7 @@ uint8_t mpu9250_set_iic_address(mpu9250_handle_t *handle, mpu9250_iic_slave_t sl
 
     if (slave == MPU9250_IIC_SLAVE_0)                                                       /* slave0 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_ADDR, (uint8_t * ) & prev, 1);       /* read i2c slv0 addr */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_ADDR, (uint8_t *) &prev, 1);       /* read i2c slv0 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10957,7 +10982,7 @@ uint8_t mpu9250_set_iic_address(mpu9250_handle_t *handle, mpu9250_iic_slave_t sl
         }
         prev &= ~0x7F;                                                                      /* clear the settings */
         prev |= addr_7bit & 0x7F;                                                           /* set the address */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_ADDR, (uint8_t * ) & prev, 1);      /* write i2c slv0 addr */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_ADDR, (uint8_t *) &prev, 1);      /* write i2c slv0 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10967,7 +10992,7 @@ uint8_t mpu9250_set_iic_address(mpu9250_handle_t *handle, mpu9250_iic_slave_t sl
         }
     } else if (slave == MPU9250_IIC_SLAVE_1)                                                  /* slave1 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_ADDR, (uint8_t * ) & prev, 1);       /* read i2c slv1 addr */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_ADDR, (uint8_t *) &prev, 1);       /* read i2c slv1 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10977,7 +11002,7 @@ uint8_t mpu9250_set_iic_address(mpu9250_handle_t *handle, mpu9250_iic_slave_t sl
         }
         prev &= ~0x7F;                                                                      /* clear the settings */
         prev |= addr_7bit & 0x7F;                                                           /* set the address */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV1_ADDR, (uint8_t * ) & prev, 1);      /* write i2c slv1 addr */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV1_ADDR, (uint8_t *) &prev, 1);      /* write i2c slv1 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10987,7 +11012,7 @@ uint8_t mpu9250_set_iic_address(mpu9250_handle_t *handle, mpu9250_iic_slave_t sl
         }
     } else if (slave == MPU9250_IIC_SLAVE_2)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_ADDR, (uint8_t * ) & prev, 1);       /* read i2c slv2 addr */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_ADDR, (uint8_t *) &prev, 1);       /* read i2c slv2 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -10997,7 +11022,7 @@ uint8_t mpu9250_set_iic_address(mpu9250_handle_t *handle, mpu9250_iic_slave_t sl
         }
         prev &= ~0x7F;                                                                      /* clear the settings */
         prev |= addr_7bit & 0x7F;                                                           /* set the address */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV2_ADDR, (uint8_t * ) & prev, 1);      /* write i2c slv2 addr */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV2_ADDR, (uint8_t *) &prev, 1);      /* write i2c slv2 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11007,7 +11032,7 @@ uint8_t mpu9250_set_iic_address(mpu9250_handle_t *handle, mpu9250_iic_slave_t sl
         }
     } else if (slave == MPU9250_IIC_SLAVE_3)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_ADDR, (uint8_t * ) & prev, 1);       /* read i2c slv3 addr */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_ADDR, (uint8_t *) &prev, 1);       /* read i2c slv3 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11017,7 +11042,7 @@ uint8_t mpu9250_set_iic_address(mpu9250_handle_t *handle, mpu9250_iic_slave_t sl
         }
         prev &= ~0x7F;                                                                      /* clear the settings */
         prev |= addr_7bit & 0x7F;                                                           /* set the address */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV3_ADDR, (uint8_t * ) & prev, 1);      /* write i2c slv3 addr */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV3_ADDR, (uint8_t *) &prev, 1);      /* write i2c slv3 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11027,7 +11052,7 @@ uint8_t mpu9250_set_iic_address(mpu9250_handle_t *handle, mpu9250_iic_slave_t sl
         }
     } else if (slave == MPU9250_IIC_SLAVE_4)                                                  /* slave4 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_ADDR, (uint8_t * ) & prev, 1);       /* read i2c slv4 addr */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_ADDR, (uint8_t *) &prev, 1);       /* read i2c slv4 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11037,7 +11062,7 @@ uint8_t mpu9250_set_iic_address(mpu9250_handle_t *handle, mpu9250_iic_slave_t sl
         }
         prev &= ~0x7F;                                                                      /* clear the settings */
         prev |= addr_7bit & 0x7F;                                                           /* set the address */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV4_ADDR, (uint8_t * ) & prev, 1);      /* write i2c slv4 addr */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV4_ADDR, (uint8_t *) &prev, 1);      /* write i2c slv4 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11083,7 +11108,7 @@ uint8_t mpu9250_get_iic_address(mpu9250_handle_t *handle, mpu9250_iic_slave_t sl
 
     if (slave == MPU9250_IIC_SLAVE_0)                                                       /* slave0 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_ADDR, (uint8_t * ) & prev, 1);       /* read i2c slv0 addr */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_ADDR, (uint8_t *) &prev, 1);       /* read i2c slv0 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11094,7 +11119,7 @@ uint8_t mpu9250_get_iic_address(mpu9250_handle_t *handle, mpu9250_iic_slave_t sl
         *addr_7bit = prev & 0x7F;                                                           /* get the address */
     } else if (slave == MPU9250_IIC_SLAVE_1)                                                  /* slave1 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_ADDR, (uint8_t * ) & prev, 1);       /* read i2c slv1 addr */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_ADDR, (uint8_t *) &prev, 1);       /* read i2c slv1 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11105,7 +11130,7 @@ uint8_t mpu9250_get_iic_address(mpu9250_handle_t *handle, mpu9250_iic_slave_t sl
         *addr_7bit = prev & 0x7F;                                                           /* get the address */
     } else if (slave == MPU9250_IIC_SLAVE_2)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_ADDR, (uint8_t * ) & prev, 1);       /* read i2c slv2 addr */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_ADDR, (uint8_t *) &prev, 1);       /* read i2c slv2 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11116,7 +11141,7 @@ uint8_t mpu9250_get_iic_address(mpu9250_handle_t *handle, mpu9250_iic_slave_t sl
         *addr_7bit = prev & 0x7F;                                                           /* get the address */
     } else if (slave == MPU9250_IIC_SLAVE_3)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_ADDR, (uint8_t * ) & prev, 1);       /* read i2c slv3 addr */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_ADDR, (uint8_t *) &prev, 1);       /* read i2c slv3 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11127,7 +11152,7 @@ uint8_t mpu9250_get_iic_address(mpu9250_handle_t *handle, mpu9250_iic_slave_t sl
         *addr_7bit = prev & 0x7F;                                                           /* get the address */
     } else if (slave == MPU9250_IIC_SLAVE_4)                                                  /* slave4 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_ADDR, (uint8_t * ) & prev, 1);       /* read i2c slv4 addr */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_ADDR, (uint8_t *) &prev, 1);       /* read i2c slv4 addr */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11173,7 +11198,7 @@ uint8_t mpu9250_set_iic_register(mpu9250_handle_t *handle, mpu9250_iic_slave_t s
 
     if (slave == MPU9250_IIC_SLAVE_0)                                                       /* slave0 */
     {
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_REG, (uint8_t * ) & reg, 1);        /* write i2c slv0 reg */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_REG, (uint8_t *) &reg, 1);        /* write i2c slv0 reg */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11183,7 +11208,7 @@ uint8_t mpu9250_set_iic_register(mpu9250_handle_t *handle, mpu9250_iic_slave_t s
         }
     } else if (slave == MPU9250_IIC_SLAVE_1)                                                  /* slave1 */
     {
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV1_REG, (uint8_t * ) & reg, 1);        /* write i2c slv1 reg */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV1_REG, (uint8_t *) &reg, 1);        /* write i2c slv1 reg */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11193,7 +11218,7 @@ uint8_t mpu9250_set_iic_register(mpu9250_handle_t *handle, mpu9250_iic_slave_t s
         }
     } else if (slave == MPU9250_IIC_SLAVE_2)                                                  /* slave2 */
     {
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV2_REG, (uint8_t * ) & reg, 1);        /* write i2c slv2 reg */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV2_REG, (uint8_t *) &reg, 1);        /* write i2c slv2 reg */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11203,7 +11228,7 @@ uint8_t mpu9250_set_iic_register(mpu9250_handle_t *handle, mpu9250_iic_slave_t s
         }
     } else if (slave == MPU9250_IIC_SLAVE_3)                                                  /* slave2 */
     {
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV3_REG, (uint8_t * ) & reg, 1);        /* write i2c slv3 reg */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV3_REG, (uint8_t *) &reg, 1);        /* write i2c slv3 reg */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11213,7 +11238,7 @@ uint8_t mpu9250_set_iic_register(mpu9250_handle_t *handle, mpu9250_iic_slave_t s
         }
     } else if (slave == MPU9250_IIC_SLAVE_4)                                                  /* slave4 */
     {
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV4_REG, (uint8_t * ) & reg, 1);        /* write i2c slv4 reg */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV4_REG, (uint8_t *) &reg, 1);        /* write i2c slv4 reg */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11338,7 +11363,7 @@ uint8_t mpu9250_set_iic_data_out(mpu9250_handle_t *handle, mpu9250_iic_slave_t s
 
     if (slave == MPU9250_IIC_SLAVE_0)                                                       /* slave0 */
     {
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_DO, (uint8_t * ) & data, 1);        /* write i2c slv0 do */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_DO, (uint8_t *) &data, 1);        /* write i2c slv0 do */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print("mpu9250: write i2c slv0 do failed.\n");                    /* write i2c slv0 do fail */
@@ -11347,7 +11372,7 @@ uint8_t mpu9250_set_iic_data_out(mpu9250_handle_t *handle, mpu9250_iic_slave_t s
         }
     } else if (slave == MPU9250_IIC_SLAVE_1)                                                  /* slave1 */
     {
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV1_DO, (uint8_t * ) & data, 1);        /* write i2c slv1 do */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV1_DO, (uint8_t *) &data, 1);        /* write i2c slv1 do */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print("mpu9250: write i2c slv1 do failed.\n");                    /* write i2c slv1 do fail */
@@ -11356,7 +11381,7 @@ uint8_t mpu9250_set_iic_data_out(mpu9250_handle_t *handle, mpu9250_iic_slave_t s
         }
     } else if (slave == MPU9250_IIC_SLAVE_2)                                                  /* slave2 */
     {
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV2_DO, (uint8_t * ) & data, 1);        /* write i2c slv2 do */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV2_DO, (uint8_t *) &data, 1);        /* write i2c slv2 do */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print("mpu9250: write i2c slv2 do failed.\n");                    /* write i2c slv2 do fail */
@@ -11365,7 +11390,7 @@ uint8_t mpu9250_set_iic_data_out(mpu9250_handle_t *handle, mpu9250_iic_slave_t s
         }
     } else if (slave == MPU9250_IIC_SLAVE_3)                                                  /* slave2 */
     {
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV3_DO, (uint8_t * ) & data, 1);        /* write i2c slv3 do */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV3_DO, (uint8_t *) &data, 1);        /* write i2c slv3 do */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print("mpu9250: write i2c slv3 do failed.\n");                    /* write i2c slv3 do fail */
@@ -11481,7 +11506,7 @@ uint8_t mpu9250_set_iic_enable(mpu9250_handle_t *handle, mpu9250_iic_slave_t sla
 
     if (slave == MPU9250_IIC_SLAVE_0)                                                       /* slave0 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv0 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv0 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11491,7 +11516,7 @@ uint8_t mpu9250_set_iic_enable(mpu9250_handle_t *handle, mpu9250_iic_slave_t sla
         }
         prev &= ~(1 << 7);                                                                  /* clear the settings */
         prev |= enable << 7;                                                                /* set the bool */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t * ) & prev, 1);      /* write i2c slv0 ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t *) &prev, 1);      /* write i2c slv0 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11501,7 +11526,7 @@ uint8_t mpu9250_set_iic_enable(mpu9250_handle_t *handle, mpu9250_iic_slave_t sla
         }
     } else if (slave == MPU9250_IIC_SLAVE_1)                                                  /* slave1 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv1 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv1 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11511,7 +11536,7 @@ uint8_t mpu9250_set_iic_enable(mpu9250_handle_t *handle, mpu9250_iic_slave_t sla
         }
         prev &= ~(1 << 7);                                                                  /* clear the settings */
         prev |= enable << 7;                                                                /* set the bool */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t * ) & prev, 1);      /* write i2c slv1 ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t *) &prev, 1);      /* write i2c slv1 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11521,7 +11546,7 @@ uint8_t mpu9250_set_iic_enable(mpu9250_handle_t *handle, mpu9250_iic_slave_t sla
         }
     } else if (slave == MPU9250_IIC_SLAVE_2)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv2 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv2 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11531,7 +11556,7 @@ uint8_t mpu9250_set_iic_enable(mpu9250_handle_t *handle, mpu9250_iic_slave_t sla
         }
         prev &= ~(1 << 7);                                                                  /* clear the settings */
         prev |= enable << 7;                                                                /* set the bool */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t * ) & prev, 1);      /* write i2c slv2 ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t *) &prev, 1);      /* write i2c slv2 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11541,7 +11566,7 @@ uint8_t mpu9250_set_iic_enable(mpu9250_handle_t *handle, mpu9250_iic_slave_t sla
         }
     } else if (slave == MPU9250_IIC_SLAVE_3)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv3 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv3 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11551,7 +11576,7 @@ uint8_t mpu9250_set_iic_enable(mpu9250_handle_t *handle, mpu9250_iic_slave_t sla
         }
         prev &= ~(1 << 7);                                                                  /* clear the settings */
         prev |= enable << 7;                                                                /* set the bool */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t * ) & prev, 1);      /* write i2c slv3 ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t *) &prev, 1);      /* write i2c slv3 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11597,7 +11622,7 @@ uint8_t mpu9250_get_iic_enable(mpu9250_handle_t *handle, mpu9250_iic_slave_t sla
 
     if (slave == MPU9250_IIC_SLAVE_0)                                                       /* slave0 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv0 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv0 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11608,7 +11633,7 @@ uint8_t mpu9250_get_iic_enable(mpu9250_handle_t *handle, mpu9250_iic_slave_t sla
         *enable = (mpu9250_bool_t) ((prev >> 7) & 0x1);                                      /* get the bool */
     } else if (slave == MPU9250_IIC_SLAVE_1)                                                  /* slave1 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv1 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv1 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11619,7 +11644,7 @@ uint8_t mpu9250_get_iic_enable(mpu9250_handle_t *handle, mpu9250_iic_slave_t sla
         *enable = (mpu9250_bool_t) ((prev >> 7) & 0x1);                                      /* get the bool */
     } else if (slave == MPU9250_IIC_SLAVE_2)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv2 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv2 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11630,7 +11655,7 @@ uint8_t mpu9250_get_iic_enable(mpu9250_handle_t *handle, mpu9250_iic_slave_t sla
         *enable = (mpu9250_bool_t) ((prev >> 7) & 0x1);                                      /* get the bool */
     } else if (slave == MPU9250_IIC_SLAVE_3)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv3 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv3 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11677,7 +11702,7 @@ uint8_t mpu9250_set_iic_byte_swap(mpu9250_handle_t *handle, mpu9250_iic_slave_t 
 
     if (slave == MPU9250_IIC_SLAVE_0)                                                       /* slave0 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv0 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv0 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11687,7 +11712,7 @@ uint8_t mpu9250_set_iic_byte_swap(mpu9250_handle_t *handle, mpu9250_iic_slave_t 
         }
         prev &= ~(1 << 6);                                                                  /* clear the settings */
         prev |= enable << 6;                                                                /* set the bool */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t * ) & prev, 1);      /* write i2c slv0 ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t *) &prev, 1);      /* write i2c slv0 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11697,7 +11722,7 @@ uint8_t mpu9250_set_iic_byte_swap(mpu9250_handle_t *handle, mpu9250_iic_slave_t 
         }
     } else if (slave == MPU9250_IIC_SLAVE_1)                                                  /* slave1 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv1 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv1 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11707,7 +11732,7 @@ uint8_t mpu9250_set_iic_byte_swap(mpu9250_handle_t *handle, mpu9250_iic_slave_t 
         }
         prev &= ~(1 << 6);                                                                  /* clear the settings */
         prev |= enable << 6;                                                                /* set the bool */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t * ) & prev, 1);      /* write i2c slv1 ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t *) &prev, 1);      /* write i2c slv1 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11717,7 +11742,7 @@ uint8_t mpu9250_set_iic_byte_swap(mpu9250_handle_t *handle, mpu9250_iic_slave_t 
         }
     } else if (slave == MPU9250_IIC_SLAVE_2)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv2 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv2 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11727,7 +11752,7 @@ uint8_t mpu9250_set_iic_byte_swap(mpu9250_handle_t *handle, mpu9250_iic_slave_t 
         }
         prev &= ~(1 << 6);                                                                  /* clear the settings */
         prev |= enable << 6;                                                                /* set the bool */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t * ) & prev, 1);      /* write i2c slv2 ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t *) &prev, 1);      /* write i2c slv2 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11737,7 +11762,7 @@ uint8_t mpu9250_set_iic_byte_swap(mpu9250_handle_t *handle, mpu9250_iic_slave_t 
         }
     } else if (slave == MPU9250_IIC_SLAVE_3)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv3 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv3 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11747,7 +11772,7 @@ uint8_t mpu9250_set_iic_byte_swap(mpu9250_handle_t *handle, mpu9250_iic_slave_t 
         }
         prev &= ~(1 << 6);                                                                  /* clear the settings */
         prev |= enable << 6;                                                                /* set the bool */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t * ) & prev, 1);      /* write i2c slv3 ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t *) &prev, 1);      /* write i2c slv3 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11793,7 +11818,7 @@ uint8_t mpu9250_get_iic_byte_swap(mpu9250_handle_t *handle, mpu9250_iic_slave_t 
 
     if (slave == MPU9250_IIC_SLAVE_0)                                                       /* slave0 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv0 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv0 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11804,7 +11829,7 @@ uint8_t mpu9250_get_iic_byte_swap(mpu9250_handle_t *handle, mpu9250_iic_slave_t 
         *enable = (mpu9250_bool_t) ((prev >> 6) & 0x1);                                      /* get the bool */
     } else if (slave == MPU9250_IIC_SLAVE_1)                                                  /* slave1 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv1 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv1 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11815,7 +11840,7 @@ uint8_t mpu9250_get_iic_byte_swap(mpu9250_handle_t *handle, mpu9250_iic_slave_t 
         *enable = (mpu9250_bool_t) ((prev >> 6) & 0x1);                                      /* get the bool */
     } else if (slave == MPU9250_IIC_SLAVE_2)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv2 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv2 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11826,7 +11851,7 @@ uint8_t mpu9250_get_iic_byte_swap(mpu9250_handle_t *handle, mpu9250_iic_slave_t 
         *enable = (mpu9250_bool_t) ((prev >> 6) & 0x1);                                      /* get the bool */
     } else if (slave == MPU9250_IIC_SLAVE_3)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv3 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv3 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11874,7 +11899,7 @@ uint8_t mpu9250_set_iic_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic_s
 
     if (slave == MPU9250_IIC_SLAVE_0)                                                       /* slave0 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv0 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv0 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11884,7 +11909,7 @@ uint8_t mpu9250_set_iic_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic_s
         }
         prev &= ~(1 << 5);                                                                  /* clear the settings */
         prev |= mode << 5;                                                                  /* set the bool */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t * ) & prev, 1);      /* write i2c slv0 ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t *) &prev, 1);      /* write i2c slv0 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11894,7 +11919,7 @@ uint8_t mpu9250_set_iic_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic_s
         }
     } else if (slave == MPU9250_IIC_SLAVE_1)                                                  /* slave1 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv1 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv1 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11904,7 +11929,7 @@ uint8_t mpu9250_set_iic_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic_s
         }
         prev &= ~(1 << 5);                                                                  /* clear the settings */
         prev |= mode << 5;                                                                  /* set the bool */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t * ) & prev, 1);      /* write i2c slv1 ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t *) &prev, 1);      /* write i2c slv1 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11914,7 +11939,7 @@ uint8_t mpu9250_set_iic_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic_s
         }
     } else if (slave == MPU9250_IIC_SLAVE_2)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv2 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv2 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11924,7 +11949,7 @@ uint8_t mpu9250_set_iic_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic_s
         }
         prev &= ~(1 << 5);                                                                  /* clear the settings */
         prev |= mode << 5;                                                                  /* set the bool */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t * ) & prev, 1);      /* write i2c slv2 ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t *) &prev, 1);      /* write i2c slv2 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11934,7 +11959,7 @@ uint8_t mpu9250_set_iic_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic_s
         }
     } else if (slave == MPU9250_IIC_SLAVE_3)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv3 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv3 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11944,7 +11969,7 @@ uint8_t mpu9250_set_iic_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic_s
         }
         prev &= ~(1 << 5);                                                                  /* clear the settings */
         prev |= mode << 5;                                                                  /* set the bool */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t * ) & prev, 1);      /* write i2c slv3 ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t *) &prev, 1);      /* write i2c slv3 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -11991,7 +12016,7 @@ uint8_t mpu9250_get_iic_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic_s
 
     if (slave == MPU9250_IIC_SLAVE_0)                                                       /* slave0 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv0 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv0 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12002,7 +12027,7 @@ uint8_t mpu9250_get_iic_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic_s
         *mode = (mpu9250_iic_transaction_mode_t) ((prev >> 5) & 0x1);                        /* get the bool */
     } else if (slave == MPU9250_IIC_SLAVE_1)                                                  /* slave1 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv1 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv1 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12013,7 +12038,7 @@ uint8_t mpu9250_get_iic_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic_s
         *mode = (mpu9250_iic_transaction_mode_t) ((prev >> 5) & 0x1);                        /* get the bool */
     } else if (slave == MPU9250_IIC_SLAVE_2)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv2 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv2 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12024,7 +12049,7 @@ uint8_t mpu9250_get_iic_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic_s
         *mode = (mpu9250_iic_transaction_mode_t) ((prev >> 5) & 0x1);                        /* get the bool */
     } else if (slave == MPU9250_IIC_SLAVE_3)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv3 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv3 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12072,7 +12097,7 @@ mpu9250_set_iic_group_order(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave,
 
     if (slave == MPU9250_IIC_SLAVE_0)                                                       /* slave0 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv0 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv0 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12082,7 +12107,7 @@ mpu9250_set_iic_group_order(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave,
         }
         prev &= ~(1 << 4);                                                                  /* clear the settings */
         prev |= order << 4;                                                                 /* set the order */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t * ) & prev, 1);      /* write i2c slv0 ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t *) &prev, 1);      /* write i2c slv0 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12092,7 +12117,7 @@ mpu9250_set_iic_group_order(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave,
         }
     } else if (slave == MPU9250_IIC_SLAVE_1)                                                  /* slave1 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv1 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv1 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12102,7 +12127,7 @@ mpu9250_set_iic_group_order(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave,
         }
         prev &= ~(1 << 4);                                                                  /* clear the settings */
         prev |= order << 4;                                                                 /* set the order */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t * ) & prev, 1);      /* write i2c slv1 ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t *) &prev, 1);      /* write i2c slv1 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12112,7 +12137,7 @@ mpu9250_set_iic_group_order(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave,
         }
     } else if (slave == MPU9250_IIC_SLAVE_2)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv2 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv2 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12122,7 +12147,7 @@ mpu9250_set_iic_group_order(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave,
         }
         prev &= ~(1 << 4);                                                                  /* clear the settings */
         prev |= order << 4;                                                                 /* set the order */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t * ) & prev, 1);      /* write i2c slv2 ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t *) &prev, 1);      /* write i2c slv2 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12132,7 +12157,7 @@ mpu9250_set_iic_group_order(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave,
         }
     } else if (slave == MPU9250_IIC_SLAVE_3)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv3 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv3 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12142,7 +12167,7 @@ mpu9250_set_iic_group_order(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave,
         }
         prev &= ~(1 << 4);                                                                  /* clear the settings */
         prev |= order << 4;                                                                 /* set the order */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t * ) & prev, 1);      /* write i2c slv3 ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t *) &prev, 1);      /* write i2c slv3 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12189,7 +12214,7 @@ mpu9250_get_iic_group_order(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave,
 
     if (slave == MPU9250_IIC_SLAVE_0)                                                       /* slave0 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv0 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv0 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12200,7 +12225,7 @@ mpu9250_get_iic_group_order(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave,
         *order = (mpu9250_iic_group_order_t) ((prev >> 4) & 0x1);                            /* get the order */
     } else if (slave == MPU9250_IIC_SLAVE_1)                                                  /* slave1 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv1 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv1 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12211,7 +12236,7 @@ mpu9250_get_iic_group_order(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave,
         *order = (mpu9250_iic_group_order_t) ((prev >> 4) & 0x1);                            /* get the order */
     } else if (slave == MPU9250_IIC_SLAVE_2)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv2 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv2 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12222,7 +12247,7 @@ mpu9250_get_iic_group_order(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave,
         *order = (mpu9250_iic_group_order_t) ((prev >> 4) & 0x1);                            /* get the order */
     } else if (slave == MPU9250_IIC_SLAVE_3)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv3 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv3 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12277,7 +12302,7 @@ uint8_t mpu9250_set_iic_transferred_len(mpu9250_handle_t *handle, mpu9250_iic_sl
 
     if (slave == MPU9250_IIC_SLAVE_0)                                                       /* slave0 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv0 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv0 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12287,7 +12312,7 @@ uint8_t mpu9250_set_iic_transferred_len(mpu9250_handle_t *handle, mpu9250_iic_sl
         }
         prev &= ~0xF;                                                                       /* clear the settings */
         prev |= len;                                                                        /* set the len */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t * ) & prev, 1);      /* write i2c slv0 ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t *) &prev, 1);      /* write i2c slv0 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12297,7 +12322,7 @@ uint8_t mpu9250_set_iic_transferred_len(mpu9250_handle_t *handle, mpu9250_iic_sl
         }
     } else if (slave == MPU9250_IIC_SLAVE_1)                                                  /* slave1 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv1 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv1 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12307,7 +12332,7 @@ uint8_t mpu9250_set_iic_transferred_len(mpu9250_handle_t *handle, mpu9250_iic_sl
         }
         prev &= ~0xF;                                                                       /* clear the settings */
         prev |= len;                                                                        /* set the len */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t * ) & prev, 1);      /* write i2c slv1 ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t *) &prev, 1);      /* write i2c slv1 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12317,7 +12342,7 @@ uint8_t mpu9250_set_iic_transferred_len(mpu9250_handle_t *handle, mpu9250_iic_sl
         }
     } else if (slave == MPU9250_IIC_SLAVE_2)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv2 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv2 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12327,7 +12352,7 @@ uint8_t mpu9250_set_iic_transferred_len(mpu9250_handle_t *handle, mpu9250_iic_sl
         }
         prev &= ~0xF;                                                                       /* clear the settings */
         prev |= len;                                                                        /* set the len */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t * ) & prev, 1);      /* write i2c slv2 ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t *) &prev, 1);      /* write i2c slv2 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12337,7 +12362,7 @@ uint8_t mpu9250_set_iic_transferred_len(mpu9250_handle_t *handle, mpu9250_iic_sl
         }
     } else if (slave == MPU9250_IIC_SLAVE_3)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv3 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv3 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12347,7 +12372,7 @@ uint8_t mpu9250_set_iic_transferred_len(mpu9250_handle_t *handle, mpu9250_iic_sl
         }
         prev &= ~0xF;                                                                       /* clear the settings */
         prev |= len;                                                                        /* set the len */
-        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t * ) & prev, 1);      /* write i2c slv3 ctrl */
+        res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t *) &prev, 1);      /* write i2c slv3 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12393,7 +12418,7 @@ uint8_t mpu9250_get_iic_transferred_len(mpu9250_handle_t *handle, mpu9250_iic_sl
 
     if (slave == MPU9250_IIC_SLAVE_0)                                                       /* slave0 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv0 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV0_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv0 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12404,7 +12429,7 @@ uint8_t mpu9250_get_iic_transferred_len(mpu9250_handle_t *handle, mpu9250_iic_sl
         *len = prev & 0x0F;                                                                 /* get the len */
     } else if (slave == MPU9250_IIC_SLAVE_1)                                                  /* slave1 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv1 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV1_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv1 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12415,7 +12440,7 @@ uint8_t mpu9250_get_iic_transferred_len(mpu9250_handle_t *handle, mpu9250_iic_sl
         *len = prev & 0x0F;                                                                 /* get the len */
     } else if (slave == MPU9250_IIC_SLAVE_2)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv2 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV2_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv2 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12426,7 +12451,7 @@ uint8_t mpu9250_get_iic_transferred_len(mpu9250_handle_t *handle, mpu9250_iic_sl
         *len = prev & 0x0F;                                                                 /* get the len */
     } else if (slave == MPU9250_IIC_SLAVE_3)                                                  /* slave2 */
     {
-        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t * ) & prev, 1);       /* read i2c slv3 ctrl */
+        res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV3_CTRL, (uint8_t *) &prev, 1);       /* read i2c slv3 ctrl */
         if (res != 0)                                                                       /* check result */
         {
             handle->debug_print(
@@ -12506,7 +12531,7 @@ uint8_t mpu9250_set_iic_delay_enable(mpu9250_handle_t *handle, mpu9250_iic_delay
         return 3;                                                                             /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_DELAY_CTRL, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_DELAY_CTRL, (uint8_t *) &prev,
                          1);        /* read i2c mst delay ctrl */
     if (res != 0)                                                                             /* check result */
     {
@@ -12517,7 +12542,7 @@ uint8_t mpu9250_set_iic_delay_enable(mpu9250_handle_t *handle, mpu9250_iic_delay
     }
     prev &= ~(1 << delay);                                                                    /* clear the settings */
     prev |= enable << delay;                                                                  /* set the bool */
-    res = a_mpu9250_write(handle, MPU9250_REG_I2C_MST_DELAY_CTRL, (uint8_t * ) & prev,
+    res = a_mpu9250_write(handle, MPU9250_REG_I2C_MST_DELAY_CTRL, (uint8_t *) &prev,
                           1);       /* write i2c mst delay ctrl */
     if (res != 0)                                                                             /* check result */
     {
@@ -12556,7 +12581,7 @@ uint8_t mpu9250_get_iic_delay_enable(mpu9250_handle_t *handle, mpu9250_iic_delay
         return 3;                                                                             /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_DELAY_CTRL, (uint8_t * ) & prev,
+    res = a_mpu9250_read(handle, MPU9250_REG_I2C_MST_DELAY_CTRL, (uint8_t *) &prev,
                          1);        /* read i2c mst delay ctrl */
     if (res != 0)                                                                             /* check result */
     {
@@ -12595,7 +12620,7 @@ uint8_t mpu9250_set_iic4_enable(mpu9250_handle_t *handle, mpu9250_bool_t enable)
         return 3;                                                                         /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t * ) & prev, 1);         /* read i2c slv4 ctrl */
+    res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t *) &prev, 1);         /* read i2c slv4 ctrl */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print(
@@ -12605,7 +12630,7 @@ uint8_t mpu9250_set_iic4_enable(mpu9250_handle_t *handle, mpu9250_bool_t enable)
     }
     prev &= ~(1 << 7);                                                                    /* clear the settings */
     prev |= enable << 7;                                                                  /* set the bool */
-    res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t * ) & prev, 1);        /* write i2c slv4 ctrl */
+    res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t *) &prev, 1);        /* write i2c slv4 ctrl */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print(
@@ -12642,7 +12667,7 @@ uint8_t mpu9250_get_iic4_enable(mpu9250_handle_t *handle, mpu9250_bool_t *enable
         return 3;                                                                         /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t * ) & prev, 1);         /* read i2c slv4 ctrl */
+    res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t *) &prev, 1);         /* read i2c slv4 ctrl */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print(
@@ -12680,7 +12705,7 @@ uint8_t mpu9250_set_iic4_interrupt(mpu9250_handle_t *handle, mpu9250_bool_t enab
         return 3;                                                                         /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t * ) & prev, 1);         /* read i2c slv4 ctrl */
+    res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t *) &prev, 1);         /* read i2c slv4 ctrl */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print(
@@ -12690,7 +12715,7 @@ uint8_t mpu9250_set_iic4_interrupt(mpu9250_handle_t *handle, mpu9250_bool_t enab
     }
     prev &= ~(1 << 6);                                                                    /* clear the settings */
     prev |= enable << 6;                                                                  /* set the bool */
-    res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t * ) & prev, 1);        /* write i2c slv4 ctrl */
+    res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t *) &prev, 1);        /* write i2c slv4 ctrl */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print(
@@ -12727,7 +12752,7 @@ uint8_t mpu9250_get_iic4_interrupt(mpu9250_handle_t *handle, mpu9250_bool_t *ena
         return 3;                                                                         /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t * ) & prev, 1);         /* read i2c slv4 ctrl */
+    res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t *) &prev, 1);         /* read i2c slv4 ctrl */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print(
@@ -12765,7 +12790,7 @@ uint8_t mpu9250_set_iic4_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic4
         return 3;                                                                         /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t * ) & prev, 1);         /* read i2c slv4 ctrl */
+    res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t *) &prev, 1);         /* read i2c slv4 ctrl */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print(
@@ -12775,7 +12800,7 @@ uint8_t mpu9250_set_iic4_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic4
     }
     prev &= ~(1 << 5);                                                                    /* clear the settings */
     prev |= mode << 5;                                                                    /* set the mode */
-    res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t * ) & prev, 1);        /* write i2c slv4 ctrl */
+    res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t *) &prev, 1);        /* write i2c slv4 ctrl */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print(
@@ -12812,7 +12837,7 @@ uint8_t mpu9250_get_iic4_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic4
         return 3;                                                                         /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t * ) & prev, 1);         /* read i2c slv4 ctrl */
+    res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t *) &prev, 1);         /* read i2c slv4 ctrl */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print(
@@ -12857,7 +12882,7 @@ uint8_t mpu9250_set_iic_delay(mpu9250_handle_t *handle, uint8_t delay) {
         return 4;                                                                         /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t * ) & prev, 1);         /* read i2c slv4 ctrl */
+    res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t *) &prev, 1);         /* read i2c slv4 ctrl */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print(
@@ -12867,7 +12892,7 @@ uint8_t mpu9250_set_iic_delay(mpu9250_handle_t *handle, uint8_t delay) {
     }
     prev &= ~0x1F;                                                                        /* clear the settings */
     prev |= delay;                                                                        /* set the delay */
-    res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t * ) & prev, 1);        /* write i2c slv4 ctrl */
+    res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t *) &prev, 1);        /* write i2c slv4 ctrl */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print(
@@ -12904,7 +12929,7 @@ uint8_t mpu9250_get_iic_delay(mpu9250_handle_t *handle, uint8_t *delay) {
         return 3;                                                                         /* return error */
     }
 
-    res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t * ) & prev, 1);         /* read i2c slv4 ctrl */
+    res = a_mpu9250_read(handle, MPU9250_REG_I2C_SLV4_CTRL, (uint8_t *) &prev, 1);         /* read i2c slv4 ctrl */
     if (res != 0)                                                                         /* check result */
     {
         handle->debug_print(
@@ -12941,7 +12966,7 @@ uint8_t mpu9250_set_iic4_data_out(mpu9250_handle_t *handle, uint8_t data) {
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV4_DO, (uint8_t * ) & data, 1);        /* write i2c slv4 do */
+    res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV4_DO, (uint8_t *) &data, 1);        /* write i2c slv4 do */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print("mpu9250: write i2c slv4 do failed.\n");                    /* write i2c slv4 do fail */
@@ -13010,7 +13035,7 @@ uint8_t mpu9250_set_iic4_data_in(mpu9250_handle_t *handle, uint8_t data) {
         return 3;                                                                       /* return error */
     }
 
-    res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV4_DI, (uint8_t * ) & data, 1);        /* write i2c slv4 di */
+    res = a_mpu9250_write(handle, MPU9250_REG_I2C_SLV4_DI, (uint8_t *) &data, 1);        /* write i2c slv4 di */
     if (res != 0)                                                                       /* check result */
     {
         handle->debug_print("mpu9250: write i2c slv4 di failed.\n");                    /* write i2c slv4 di failed */

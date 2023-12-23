@@ -64,8 +64,7 @@ extern "C"{
 /**
  * @brief mpu9250 interface enumeration definition
  */
-typedef enum
-{
+typedef enum {
     MPU9250_INTERFACE_IIC = 0x00,        /**< iic interface function */
     MPU9250_INTERFACE_SPI = 0x01,        /**< spi interface function */
 } mpu9250_interface_t;
@@ -73,29 +72,26 @@ typedef enum
 /**
  * @brief mpu9250 address enumeration definition
  */
-typedef enum
-{
-    MPU9250_ADDRESS_AD0_LOW  = 0xD0,        /**< AD0 pin set LOW */
-    MPU9250_ADDRESS_AD0_HIGH = 0xD2,        /**< AD0 pin set HIGH */
+typedef enum {
+    MPU9250_ADDRESS_AD0_LOW = (0xD0 >> 1),        /**< AD0 pin set LOW */ // edit: right shifted
+    MPU9250_ADDRESS_AD0_HIGH = (0xD2 >> 1),        /**< AD0 pin set HIGH */ // edit: right shifted
 } mpu9250_address_t;
 
 /**
  * @brief mpu9250 bool enumeration definition
  */
-typedef enum
-{
+typedef enum {
     MPU9250_BOOL_FALSE = 0x00,        /**< disable function */
-    MPU9250_BOOL_TRUE  = 0x01,        /**< enable function */
+    MPU9250_BOOL_TRUE = 0x01,        /**< enable function */
 } mpu9250_bool_t;
 
 /**
  * @brief mpu9250 source enumeration definition
  */
-typedef enum
-{
-    MPU9250_SOURCE_ACC_X  = 0x05,        /**< accelerometer x */
-    MPU9250_SOURCE_ACC_Y  = 0x04,        /**< accelerometer y */
-    MPU9250_SOURCE_ACC_Z  = 0x03,        /**< accelerometer z */
+typedef enum {
+    MPU9250_SOURCE_ACC_X = 0x05,        /**< accelerometer x */
+    MPU9250_SOURCE_ACC_Y = 0x04,        /**< accelerometer y */
+    MPU9250_SOURCE_ACC_Z = 0x03,        /**< accelerometer z */
     MPU9250_SOURCE_GYRO_X = 0x02,        /**< gyroscope x */
     MPU9250_SOURCE_GYRO_Y = 0x01,        /**< gyroscope y */
     MPU9250_SOURCE_GYRO_Z = 0x00,        /**< gyroscope z */
@@ -104,36 +100,33 @@ typedef enum
 /**
  * @brief mpu9250 clock source enumeration definition
  */
-typedef enum
-{
+typedef enum {
     MPU9250_CLOCK_SOURCE_INTERNAL_20MHZ = 0x00,        /**< internal 20MHz */
-    MPU9250_CLOCK_SOURCE_PLL            = 0x01,        /**< pll reference */
-    MPU9250_CLOCK_SOURCE_STOP_CLOCK     = 0x07,        /**< stop the clock */
+    MPU9250_CLOCK_SOURCE_PLL = 0x01,        /**< pll reference */
+    MPU9250_CLOCK_SOURCE_STOP_CLOCK = 0x07,        /**< stop the clock */
 } mpu9250_clock_source_t;
 
 /**
  * @brief mpu9250 signal path reset enumeration definition
  */
-typedef enum
-{
-    MPU9250_SIGNAL_PATH_RESET_TEMP  = 0x00,        /**< temperature sensor analog and digital signal paths */
+typedef enum {
+    MPU9250_SIGNAL_PATH_RESET_TEMP = 0x00,        /**< temperature sensor analog and digital signal paths */
     MPU9250_SIGNAL_PATH_RESET_ACCEL = 0x01,        /**< accelerometer analog and digital signal paths */
-    MPU9250_SIGNAL_PATH_RESET_GYRO  = 0x02,        /**< gyroscope analog and digital signal paths */
+    MPU9250_SIGNAL_PATH_RESET_GYRO = 0x02,        /**< gyroscope analog and digital signal paths */
 } mpu9250_signal_path_reset_t;
 
 /**
  * @brief mpu9250 extern sync enumeration definition
  */
-typedef enum
-{
+typedef enum {
     MPU9250_EXTERN_SYNC_INPUT_DISABLED = 0x00,        /**< input disabled */
-    MPU9250_EXTERN_SYNC_TEMP_OUT_L     = 0x01,        /**< temp out low */
-    MPU9250_EXTERN_SYNC_GYRO_XOUT_L    = 0x02,        /**< gyro xout low */
-    MPU9250_EXTERN_SYNC_GYRO_YOUT_L    = 0x03,        /**< gyro yout low */
-    MPU9250_EXTERN_SYNC_GYRO_ZOUT_L    = 0x04,        /**< gyro zout low */
-    MPU9250_EXTERN_SYNC_ACCEL_XOUT_L   = 0x05,        /**< accel xout low */
-    MPU9250_EXTERN_SYNC_ACCEL_YOUT_L   = 0x06,        /**< accel yout low */
-    MPU9250_EXTERN_SYNC_ACCEL_ZOUT_L   = 0x07,        /**< accel zout low */
+    MPU9250_EXTERN_SYNC_TEMP_OUT_L = 0x01,        /**< temp out low */
+    MPU9250_EXTERN_SYNC_GYRO_XOUT_L = 0x02,        /**< gyro xout low */
+    MPU9250_EXTERN_SYNC_GYRO_YOUT_L = 0x03,        /**< gyro yout low */
+    MPU9250_EXTERN_SYNC_GYRO_ZOUT_L = 0x04,        /**< gyro zout low */
+    MPU9250_EXTERN_SYNC_ACCEL_XOUT_L = 0x05,        /**< accel xout low */
+    MPU9250_EXTERN_SYNC_ACCEL_YOUT_L = 0x06,        /**< accel yout low */
+    MPU9250_EXTERN_SYNC_ACCEL_ZOUT_L = 0x07,        /**< accel zout low */
 } mpu9250_extern_sync_t;
 
 /**
@@ -172,27 +165,25 @@ typedef enum                                               /**< accelerometer fc
 /**
  * @brief mpu9250 low power accel output rate enumeration definition
  */
-typedef enum
-{
-    MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_0P24  = 0x00,        /**< 0.24Hz */
-    MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_0P49  = 0x01,        /**< 0.49Hz */
-    MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_0P98  = 0x02,        /**< 0.98Hz */
-    MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_1P95  = 0x03,        /**< 1.95Hz */
-    MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_3P91  = 0x04,        /**< 3.91Hz */
-    MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_7P81  = 0x05,        /**< 7.81Hz */
+typedef enum {
+    MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_0P24 = 0x00,        /**< 0.24Hz */
+    MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_0P49 = 0x01,        /**< 0.49Hz */
+    MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_0P98 = 0x02,        /**< 0.98Hz */
+    MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_1P95 = 0x03,        /**< 1.95Hz */
+    MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_3P91 = 0x04,        /**< 3.91Hz */
+    MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_7P81 = 0x05,        /**< 7.81Hz */
     MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_15P63 = 0x06,        /**< 15.63Hz */
     MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_31P25 = 0x07,        /**< 31.25Hz */
     MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_62P50 = 0x08,        /**< 62.50Hz */
-    MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_125   = 0x09,        /**< 125Hz */
-    MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_250   = 0x0A,        /**< 250Hz */
-    MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_500   = 0x0B,        /**< 500Hz */
+    MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_125 = 0x09,        /**< 125Hz */
+    MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_250 = 0x0A,        /**< 250Hz */
+    MPU9250_LOW_POWER_ACCEL_OUTPUT_RATE_500 = 0x0B,        /**< 500Hz */
 } mpu9250_low_power_accel_output_rate_t;
 
 /**
  * @brief mpu9250 axis enumeration definition
  */
-typedef enum
-{
+typedef enum {
     MPU9250_AXIS_Z = 0x05,        /**< z */
     MPU9250_AXIS_Y = 0x06,        /**< y */
     MPU9250_AXIS_X = 0x07,        /**< x */
@@ -201,10 +192,9 @@ typedef enum
 /**
  * @brief mpu9250 gyroscope range enumeration definition
  */
-typedef enum
-{
-    MPU9250_GYROSCOPE_RANGE_250DPS  = 0x00,        /**< ±250 dps */
-    MPU9250_GYROSCOPE_RANGE_500DPS  = 0x01,        /**< ±500 dps */
+typedef enum {
+    MPU9250_GYROSCOPE_RANGE_250DPS = 0x00,        /**< ±250 dps */
+    MPU9250_GYROSCOPE_RANGE_500DPS = 0x01,        /**< ±500 dps */
     MPU9250_GYROSCOPE_RANGE_1000DPS = 0x02,        /**< ±1000 dps */
     MPU9250_GYROSCOPE_RANGE_2000DPS = 0x03,        /**< ±2000 dps */
 } mpu9250_gyroscope_range_t;
@@ -212,31 +202,28 @@ typedef enum
 /**
  * @brief mpu9250 accelerometer range enumeration definition
  */
-typedef enum
-{
-    MPU9250_ACCELEROMETER_RANGE_2G  = 0x00,        /**< ±2 g */
-    MPU9250_ACCELEROMETER_RANGE_4G  = 0x01,        /**< ±4 g */
-    MPU9250_ACCELEROMETER_RANGE_8G  = 0x02,        /**< ±8 g */
+typedef enum {
+    MPU9250_ACCELEROMETER_RANGE_2G = 0x00,        /**< ±2 g */
+    MPU9250_ACCELEROMETER_RANGE_4G = 0x01,        /**< ±4 g */
+    MPU9250_ACCELEROMETER_RANGE_8G = 0x02,        /**< ±8 g */
     MPU9250_ACCELEROMETER_RANGE_16G = 0x03,        /**< ±16 g */
 } mpu9250_accelerometer_range_t;
 
 /**
  * @brief mpu9250 fifo enumeration definition
  */
-typedef enum
-{
-    MPU9250_FIFO_TEMP  = 0x07,        /**< temperature */
-    MPU9250_FIFO_XG    = 0x06,        /**< gyroscope x */
-    MPU9250_FIFO_YG    = 0x05,        /**< gyroscope y */
-    MPU9250_FIFO_ZG    = 0x04,        /**< gyroscope z */
+typedef enum {
+    MPU9250_FIFO_TEMP = 0x07,        /**< temperature */
+    MPU9250_FIFO_XG = 0x06,        /**< gyroscope x */
+    MPU9250_FIFO_YG = 0x05,        /**< gyroscope y */
+    MPU9250_FIFO_ZG = 0x04,        /**< gyroscope z */
     MPU9250_FIFO_ACCEL = 0x03,        /**< accelerometer */
 } mpu9250_fifo_t;
 
 /**
  * @brief mpu9250 fifo mode enumeration definition
  */
-typedef enum
-{
+typedef enum {
     MPU9250_FIFO_MODE_STREAM = 0x00,        /**< when the fifo is full, additional writes will be written to the fifo,
                                                  replacing the oldest data */
     MPU9250_FIFO_MODE_NORMAL = 0x01,        /**< when the fifo is full, additional writes will not be written to fifo */
@@ -245,38 +232,34 @@ typedef enum
 /**
  * @brief mpu9250 pin level enumeration definition
  */
-typedef enum
-{
+typedef enum {
     MPU9250_PIN_LEVEL_HIGH = 0x00,        /**< active low */
-    MPU9250_PIN_LEVEL_LOW  = 0x01,        /**< active high */
+    MPU9250_PIN_LEVEL_LOW = 0x01,        /**< active high */
 } mpu9250_pin_level_t;
 
 /**
  * @brief mpu9250 pin type enumeration definition
  */
-typedef enum
-{
-    MPU9250_PIN_TYPE_PUSH_PULL  = 0x00,        /**< push pull */
+typedef enum {
+    MPU9250_PIN_TYPE_PUSH_PULL = 0x00,        /**< push pull */
     MPU9250_PIN_TYPE_OPEN_DRAIN = 0x01,        /**< open drain */
 } mpu9250_pin_type_t;
 
 /**
  * @brief mpu9250 interrupt enumeration definition
  */
-typedef enum
-{
-    MPU9250_INTERRUPT_MOTION        = 6,        /**< motion */
+typedef enum {
+    MPU9250_INTERRUPT_MOTION = 6,        /**< motion */
     MPU9250_INTERRUPT_FIFO_OVERFLOW = 4,        /**< fifo overflow */
-    MPU9250_INTERRUPT_FSYNC_INT     = 3,        /**< fsync int */
-    MPU9250_INTERRUPT_DMP           = 1,        /**< dmp */
-    MPU9250_INTERRUPT_DATA_READY    = 0,        /**< data ready */
+    MPU9250_INTERRUPT_FSYNC_INT = 3,        /**< fsync int */
+    MPU9250_INTERRUPT_DMP = 1,        /**< dmp */
+    MPU9250_INTERRUPT_DATA_READY = 0,        /**< data ready */
 } mpu9250_interrupt_t;
 
 /**
  * @brief mpu9250 iic slave enumeration definition
  */
-typedef enum
-{
+typedef enum {
     MPU9250_IIC_SLAVE_0 = 0x00,        /**< slave0 */
     MPU9250_IIC_SLAVE_1 = 0x01,        /**< slave1 */
     MPU9250_IIC_SLAVE_2 = 0x02,        /**< slave2 */
@@ -287,8 +270,7 @@ typedef enum
 /**
  * @brief mpu9250 iic clock enumeration definition
  */
-typedef enum
-{
+typedef enum {
     MPU9250_IIC_CLOCK_348_KHZ = 0x00,        /**< 348 kHz */
     MPU9250_IIC_CLOCK_333_KHZ = 0x01,        /**< 333 kHz */
     MPU9250_IIC_CLOCK_320_KHZ = 0x02,        /**< 320 kHz */
@@ -310,58 +292,52 @@ typedef enum
 /**
  * @brief mpu9250 iic read mode enumeration definition
  */
-typedef enum
-{
-    MPU9250_IIC_READ_MODE_RESTART        = 0x00,        /**< restart */
+typedef enum {
+    MPU9250_IIC_READ_MODE_RESTART = 0x00,        /**< restart */
     MPU9250_IIC_READ_MODE_STOP_AND_START = 0x01,        /**< stop and start */
 } mpu9250_iic_read_mode_t;
 
 /**
  * @brief mpu9250 iic mode enumeration definition
  */
-typedef enum
-{
+typedef enum {
     MPU9250_IIC_MODE_WRITE = 0x00,        /**< write */
-    MPU9250_IIC_MODE_READ  = 0x01,        /**< read */
+    MPU9250_IIC_MODE_READ = 0x01,        /**< read */
 } mpu9250_iic_mode_t;
 
 /**
  * @brief mpu9250 iic transaction mode enumeration definition
  */
-typedef enum
-{
-    MPU9250_IIC_TRANSACTION_MODE_DATA     = 0x00,        /**< data only */
+typedef enum {
+    MPU9250_IIC_TRANSACTION_MODE_DATA = 0x00,        /**< data only */
     MPU9250_IIC_TRANSACTION_MODE_REG_DATA = 0x01,        /**< write a register address prior to reading or writing data */
 } mpu9250_iic_transaction_mode_t;
 
 /**
  * @brief mpu9250 iic4 transaction mode enumeration definition
  */
-typedef enum
-{
+typedef enum {
     MPU9250_IIC4_TRANSACTION_MODE_DATA = 0x00,        /**< data only */
-    MPU9250_IIC4_TRANSACTION_MODE_REG  = 0x01,        /**< register only */
+    MPU9250_IIC4_TRANSACTION_MODE_REG = 0x01,        /**< register only */
 } mpu9250_iic4_transaction_mode_t;
 
 /**
  * @brief mpu9250 iic group order enumeration definition
  */
-typedef enum
-{
+typedef enum {
     MPU9250_IIC_GROUP_ORDER_EVEN = 0x00,        /**< when cleared to 0, bytes from register addresses 0 and 1, 2 and 3,
                                                      etc (even, then odd register addresses) are paired to form a word */
-    MPU9250_IIC_GROUP_ORDER_ODD  = 0x01,        /**< when set to 1, bytes from register addresses are paired 1 and 2, 3 and 4,
+    MPU9250_IIC_GROUP_ORDER_ODD = 0x01,        /**< when set to 1, bytes from register addresses are paired 1 and 2, 3 and 4,
                                                      etc (odd, then even register addresses) are paired to form a word */
 } mpu9250_iic_group_order_t;
 
 /**
  * @brief mpu9250 iic status enumeration definition
  */
-typedef enum
-{
-    MPU9250_IIC_STATUS_PASS_THROUGH  = 0x80,        /**< pass through */
+typedef enum {
+    MPU9250_IIC_STATUS_PASS_THROUGH = 0x80,        /**< pass through */
     MPU9250_IIC_STATUS_IIC_SLV4_DONE = 0x40,        /**< slave4 done */
-    MPU9250_IIC_STATUS_IIC_LOST_ARB  = 0x20,        /**< lost arbitration */
+    MPU9250_IIC_STATUS_IIC_LOST_ARB = 0x20,        /**< lost arbitration */
     MPU9250_IIC_STATUS_IIC_SLV4_NACK = 0x10,        /**< slave4 nack */
     MPU9250_IIC_STATUS_IIC_SLV3_NACK = 0x08,        /**< slave3 nack */
     MPU9250_IIC_STATUS_IIC_SLV2_NACK = 0x04,        /**< slave2 nack */
@@ -372,15 +348,14 @@ typedef enum
 /**
  * @brief mpu9250 iic delay enumeration definition
  */
-typedef enum
-{
+typedef enum {
     MPU9250_IIC_DELAY_ES_SHADOW = 7,        /**< delays shadowing of external sensor data until
                                                  all data has been received */
-    MPU9250_IIC_DELAY_SLAVE_4   = 4,        /**< slave 4 */
-    MPU9250_IIC_DELAY_SLAVE_3   = 3,        /**< slave 3 */
-    MPU9250_IIC_DELAY_SLAVE_2   = 2,        /**< slave 2 */
-    MPU9250_IIC_DELAY_SLAVE_1   = 1,        /**< slave 1 */
-    MPU9250_IIC_DELAY_SLAVE_0   = 0,        /**< slave 0 */
+    MPU9250_IIC_DELAY_SLAVE_4 = 4,        /**< slave 4 */
+    MPU9250_IIC_DELAY_SLAVE_3 = 3,        /**< slave 3 */
+    MPU9250_IIC_DELAY_SLAVE_2 = 2,        /**< slave 2 */
+    MPU9250_IIC_DELAY_SLAVE_1 = 1,        /**< slave 1 */
+    MPU9250_IIC_DELAY_SLAVE_0 = 0,        /**< slave 0 */
 } mpu9250_iic_delay_t;
 
 /**
@@ -395,17 +370,15 @@ typedef enum
 /**
  * @brief mpu9250 magnetometer status1 enumeration definition
  */
-typedef enum
-{
+typedef enum {
     MPU9250_MAGNETOMETER_STATUS1_DRDY = (1 << 0),        /**< data is ready */
-    MPU9250_MAGNETOMETER_STATUS1_DOR  = (1 << 1),        /**< data overrun */
+    MPU9250_MAGNETOMETER_STATUS1_DOR = (1 << 1),        /**< data overrun */
 } mpu9250_magnetometer_status1_t;
 
 /**
  * @brief mpu9250 magnetometer status2 enumeration definition
  */
-typedef enum
-{
+typedef enum {
     MPU9250_MAGNETOMETER_STATUS2_HOFL = (1 << 3),        /**< magnetic sensor overflow occurred */
     MPU9250_MAGNETOMETER_STATUS2_BITM = (1 << 4),        /**< 0: 14bits / 1: 16bits */
 } mpu9250_magnetometer_status2_t;
@@ -413,22 +386,20 @@ typedef enum
 /**
  * @brief mpu9250 magnetometer mode enumeration definition
  */
-typedef enum
-{
-    MPU9250_MAGNETOMETER_MODE_POWER_DOWN  = 0x00,        /**< power down mode */
-    MPU9250_MAGNETOMETER_MODE_SINGLE      = 0x01,        /**< single measurement mode */
+typedef enum {
+    MPU9250_MAGNETOMETER_MODE_POWER_DOWN = 0x00,        /**< power down mode */
+    MPU9250_MAGNETOMETER_MODE_SINGLE = 0x01,        /**< single measurement mode */
     MPU9250_MAGNETOMETER_MODE_CONTINUOUS1 = 0x02,        /**< continuous measurement mode 1 */
     MPU9250_MAGNETOMETER_MODE_CONTINUOUS2 = 0x06,        /**< continuous measurement mode 2 */
     MPU9250_MAGNETOMETER_MODE_EXT_TRIGGER = 0x04,        /**< external trigger measurement mode */
-    MPU9250_MAGNETOMETER_MODE_SELF_TEST   = 0x08,        /**< self test mode */
-    MPU9250_MAGNETOMETER_MODE_FUSE_ROM    = 0x0F,        /**< fuse rom access mode */
+    MPU9250_MAGNETOMETER_MODE_SELF_TEST = 0x08,        /**< self test mode */
+    MPU9250_MAGNETOMETER_MODE_FUSE_ROM = 0x0F,        /**< fuse rom access mode */
 } mpu9250_magnetometer_mode_t;
 
 /**
  * @brief mpu9250 magnetometer bits enumeration definition
  */
-typedef enum
-{
+typedef enum {
     MPU9250_MAGNETOMETER_BITS_14 = 0x00,        /**< 14 bits output */
     MPU9250_MAGNETOMETER_BITS_16 = 0x01,        /**< 16 bits output */
 } mpu9250_magnetometer_bits_t;
@@ -445,49 +416,45 @@ typedef enum
 /**
  * @brief mpu9250 dmp interrupt mode enumeration definition
  */
-typedef enum
-{
+typedef enum {
     MPU9250_DMP_INTERRUPT_MODE_CONTINUOUS = 0x00,        /**< continuous mode */
-    MPU9250_DMP_INTERRUPT_MODE_GESTURE    = 0x01,        /**< gesture mode */
+    MPU9250_DMP_INTERRUPT_MODE_GESTURE = 0x01,        /**< gesture mode */
 } mpu9250_dmp_interrupt_mode_t;
 
 /**
  * @brief mpu9250 dmp feature enumeration definition
  */
-typedef enum
-{
-    MPU9250_DMP_FEATURE_TAP            = 0x001,        /**< feature tap */
-    MPU9250_DMP_FEATURE_ORIENT         = 0x002,        /**< feature orient */
-    MPU9250_DMP_FEATURE_3X_QUAT        = 0x004,        /**< feature 3x quat */
-    MPU9250_DMP_FEATURE_PEDOMETER      = 0x008,        /**< feature pedometer */
-    MPU9250_DMP_FEATURE_6X_QUAT        = 0x010,        /**< feature 6x quat */
-    MPU9250_DMP_FEATURE_GYRO_CAL       = 0x020,        /**< feature gyro cal */
+typedef enum {
+    MPU9250_DMP_FEATURE_TAP = 0x001,        /**< feature tap */
+    MPU9250_DMP_FEATURE_ORIENT = 0x002,        /**< feature orient */
+    MPU9250_DMP_FEATURE_3X_QUAT = 0x004,        /**< feature 3x quat */
+    MPU9250_DMP_FEATURE_PEDOMETER = 0x008,        /**< feature pedometer */
+    MPU9250_DMP_FEATURE_6X_QUAT = 0x010,        /**< feature 6x quat */
+    MPU9250_DMP_FEATURE_GYRO_CAL = 0x020,        /**< feature gyro cal */
     MPU9250_DMP_FEATURE_SEND_RAW_ACCEL = 0x040,        /**< feature send raw accel */
-    MPU9250_DMP_FEATURE_SEND_RAW_GYRO  = 0x080,        /**< feature send raw gyro */
-    MPU9250_DMP_FEATURE_SEND_CAL_GYRO  = 0x100,        /**< feature send cal gyro */
+    MPU9250_DMP_FEATURE_SEND_RAW_GYRO = 0x080,        /**< feature send raw gyro */
+    MPU9250_DMP_FEATURE_SEND_CAL_GYRO = 0x100,        /**< feature send cal gyro */
 } mpu9250_dmp_feature_t;
 
 /**
  * @brief mpu9250 dmp tap enumeration definition
  */
-typedef enum
-{
-    MPU9250_DMP_TAP_X_UP   = 0x01,        /**< tap x up */
+typedef enum {
+    MPU9250_DMP_TAP_X_UP = 0x01,        /**< tap x up */
     MPU9250_DMP_TAP_X_DOWN = 0x02,        /**< tap x down */
-    MPU9250_DMP_TAP_Y_UP   = 0x03,        /**< tap y up */
+    MPU9250_DMP_TAP_Y_UP = 0x03,        /**< tap y up */
     MPU9250_DMP_TAP_Y_DOWN = 0x04,        /**< tap y down */
-    MPU9250_DMP_TAP_Z_UP   = 0x05,        /**< tap z up */
+    MPU9250_DMP_TAP_Z_UP = 0x05,        /**< tap z up */
     MPU9250_DMP_TAP_Z_DOWN = 0x06,        /**< tap z down */
 } mpu9250_dmp_tap_t;
 
 /**
  * @brief mpu9250 dmp orient enumeration definition
  */
-typedef enum
-{
-    MPU9250_DMP_ORIENT_PORTRAIT          = 0x00,        /**< portrait */
-    MPU9250_DMP_ORIENT_LANDSCAPE         = 0x01,        /**< landscape */
-    MPU9250_DMP_ORIENT_REVERSE_PORTRAIT  = 0x02,        /**< reverse portrait */
+typedef enum {
+    MPU9250_DMP_ORIENT_PORTRAIT = 0x00,        /**< portrait */
+    MPU9250_DMP_ORIENT_LANDSCAPE = 0x01,        /**< landscape */
+    MPU9250_DMP_ORIENT_REVERSE_PORTRAIT = 0x02,        /**< reverse portrait */
     MPU9250_DMP_ORIENT_REVERSE_LANDSCAPE = 0x03,        /**< reverse landscape */
 } mpu9250_dmp_orient_t;
 
@@ -503,22 +470,34 @@ typedef enum
 /**
  * @brief mpu9250 handle structure definition
  */
-typedef struct mpu9250_handle_s
-{
+typedef struct mpu9250_handle_s {
     uint8_t iic_addr;                                                                   /**< iic device address */
-    uint8_t (*iic_init)(void);                                                          /**< point to an iic_init function address */
-    uint8_t (*iic_deinit)(void);                                                        /**< point to an iic_deinit function address */
-    uint8_t (*iic_read)(uint8_t addr, uint8_t reg, uint8_t *buf, uint16_t len);         /**< point to an iic_read function address */
-    uint8_t (*iic_write)(uint8_t addr, uint8_t reg, uint8_t *buf, uint16_t len);        /**< point to an iic_write function address */
-    uint8_t (*spi_init)(void);                                                          /**< point to a spi_init function address */
-    uint8_t (*spi_deinit)(void);                                                        /**< point to a spi_deinit function address */
-    uint8_t (*spi_read)(uint8_t reg, uint8_t *buf, uint16_t len);                       /**< point to a spi_read function address */
-    uint8_t (*spi_write)(uint8_t reg, uint8_t *buf, uint16_t len);                      /**< point to a spi_write function address */
-    void (*delay_ms)(uint32_t ms);                                                      /**< point to a delay_ms function address */
-    void (*debug_print)(const char *const fmt, ...);                                    /**< point to a debug_print function address */
-    void (*receive_callback)(uint8_t type);                                             /**< point to a receive_callback function address */
-    void (*dmp_tap_callback)(uint8_t count, uint8_t direction);                         /**< point to a dmp_tap_callback function address */
-    void (*dmp_orient_callback)(uint8_t orientation);                                   /**< point to a dmp_orient_callback function address */
+    uint8_t (*iic_init)(
+            void);                                                          /**< point to an iic_init function address */
+    uint8_t (*iic_deinit)(
+            void);                                                        /**< point to an iic_deinit function address */
+    uint8_t (*iic_read)(uint8_t addr, uint8_t reg, uint8_t *buf,
+                        uint16_t len);         /**< point to an iic_read function address */
+    uint8_t (*iic_write)(uint8_t addr, uint8_t reg, uint8_t *buf,
+                         uint16_t len);        /**< point to an iic_write function address */
+    uint8_t (*spi_init)(
+            void);                                                          /**< point to a spi_init function address */
+    uint8_t (*spi_deinit)(
+            void);                                                        /**< point to a spi_deinit function address */
+    uint8_t (*spi_read)(uint8_t reg, uint8_t *buf,
+                        uint16_t len);                       /**< point to a spi_read function address */
+    uint8_t (*spi_write)(uint8_t reg, uint8_t *buf,
+                         uint16_t len);                      /**< point to a spi_write function address */
+    void (*delay_ms)(
+            uint32_t ms);                                                      /**< point to a delay_ms function address */
+    void (*debug_print)(const char *const fmt,
+                        ...);                                    /**< point to a debug_print function address */
+    void (*receive_callback)(
+            uint8_t type);                                             /**< point to a receive_callback function address */
+    void (*dmp_tap_callback)(uint8_t count,
+                             uint8_t direction);                         /**< point to a dmp_tap_callback function address */
+    void (*dmp_orient_callback)(
+            uint8_t orientation);                                   /**< point to a dmp_orient_callback function address */
     uint8_t inited;                                                                     /**< inited flag */
     uint8_t mag_inited;                                                                 /**< magnetometer inited flag */
     uint8_t mag_asa[3];                                                                 /**< magnetometer asa */
@@ -532,8 +511,7 @@ typedef struct mpu9250_handle_s
 /**
  * @brief mpu9250 information structure definition
  */
-typedef struct mpu9250_info_s
-{
+typedef struct mpu9250_info_s {
     char chip_name[32];                /**< chip name */
     char manufacturer_name[32];        /**< manufacturer name */
     char interface[8];                 /**< chip interface name */
@@ -1156,7 +1134,7 @@ uint8_t mpu9250_get_standby_mode(mpu9250_handle_t *handle, mpu9250_source_t sour
  *             - 3 handle is not initialized
  * @note       none
  */
-uint8_t mpu9250_get_fifo_count(mpu9250_handle_t *handle, uint16_t* count);
+uint8_t mpu9250_get_fifo_count(mpu9250_handle_t *handle, uint16_t *count);
 
 /**
  * @brief      fifo read bytes
@@ -1489,7 +1467,8 @@ uint8_t mpu9250_get_accelerometer_choice(mpu9250_handle_t *handle, uint8_t *choi
  *            - 3 handle is not initialized
  * @note      none
  */
-uint8_t mpu9250_set_accelerometer_low_pass_filter(mpu9250_handle_t *handle, mpu9250_accelerometer_low_pass_filter_t filter);
+uint8_t
+mpu9250_set_accelerometer_low_pass_filter(mpu9250_handle_t *handle, mpu9250_accelerometer_low_pass_filter_t filter);
 
 /**
  * @brief      get the accelerometer low pass filter
@@ -1502,7 +1481,8 @@ uint8_t mpu9250_set_accelerometer_low_pass_filter(mpu9250_handle_t *handle, mpu9
  *             - 3 handle is not initialized
  * @note       none
  */
-uint8_t mpu9250_get_accelerometer_low_pass_filter(mpu9250_handle_t *handle, mpu9250_accelerometer_low_pass_filter_t *filter);
+uint8_t
+mpu9250_get_accelerometer_low_pass_filter(mpu9250_handle_t *handle, mpu9250_accelerometer_low_pass_filter_t *filter);
 
 /**
  * @brief     set the low power accel output rate
@@ -2590,7 +2570,8 @@ uint8_t mpu9250_get_iic_byte_swap(mpu9250_handle_t *handle, mpu9250_iic_slave_t 
  *            - 4 invalid slave
  * @note      none
  */
-uint8_t mpu9250_set_iic_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave, mpu9250_iic_transaction_mode_t mode);
+uint8_t mpu9250_set_iic_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave,
+                                         mpu9250_iic_transaction_mode_t mode);
 
 /**
  * @brief      get the iic transaction mode
@@ -2605,7 +2586,8 @@ uint8_t mpu9250_set_iic_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic_s
  *             - 4 invalid slave
  * @note       none
  */
-uint8_t mpu9250_get_iic_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave, mpu9250_iic_transaction_mode_t *mode);
+uint8_t mpu9250_get_iic_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave,
+                                         mpu9250_iic_transaction_mode_t *mode);
 
 /**
  * @brief     set the iic group order
@@ -2620,7 +2602,8 @@ uint8_t mpu9250_get_iic_transaction_mode(mpu9250_handle_t *handle, mpu9250_iic_s
  *            - 4 invalid slave
  * @note      none
  */
-uint8_t mpu9250_set_iic_group_order(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave, mpu9250_iic_group_order_t order);
+uint8_t
+mpu9250_set_iic_group_order(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave, mpu9250_iic_group_order_t order);
 
 /**
  * @brief      get the iic group order
@@ -2635,7 +2618,8 @@ uint8_t mpu9250_set_iic_group_order(mpu9250_handle_t *handle, mpu9250_iic_slave_
  *             - 4 invalid slave
  * @note       none
  */
-uint8_t mpu9250_get_iic_group_order(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave, mpu9250_iic_group_order_t *order);
+uint8_t
+mpu9250_get_iic_group_order(mpu9250_handle_t *handle, mpu9250_iic_slave_t slave, mpu9250_iic_group_order_t *order);
 
 /**
  * @brief     set the iic transferred length
