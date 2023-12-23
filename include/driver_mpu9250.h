@@ -62,6 +62,11 @@ extern "C"{
  */
 
 /**
+ * @brief chip ak8963 iic address definition
+ */
+#define AK8963_IIC_ADDRESS              0x0C        /**< ak8963 iic address */
+
+/**
  * @brief mpu9250 interface enumeration definition
  */
 typedef enum {

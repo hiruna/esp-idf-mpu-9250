@@ -5,20 +5,24 @@
  */
 
 #include "driver_mpu9250_interface.h"
-
+#include "include/driver_mpu9250.h"
 static const char *MPU9250_INTERFACE_TAG = "driver_mpu9250_interface";
 
 #define I2C_READ_TIMEOUT_MS 1000
 #define I2C_WRITE_TIMEOUT_MS 1000
 
 i2c_master_bus_handle_t i2c_master_bus_hdl;
-i2c_master_dev_handle_t i2c_master_dev_hdl;
+i2c_master_dev_handle_t i2c_master_mpu9250_dev_hdl;
+i2c_master_dev_handle_t i2c_master_ak8963_dev_hdl;
 i2c_master_bus_config_t *i2c_master_conf = NULL;
-i2c_device_config_t *i2c_dev_conf = NULL;
+i2c_device_config_t *i2c_mpu9250_dev_conf = NULL;
+i2c_device_config_t *i2c_ak8963_dev_conf = NULL;
 
-esp_err_t mpu9250_set_i2c_config(i2c_master_bus_config_t *master_cfg, i2c_device_config_t *dev_conf) {
+esp_err_t mpu9250_set_i2c_config(i2c_master_bus_config_t *master_cfg, i2c_device_config_t *mpu9250_dev_conf) {
     i2c_master_conf = master_cfg;
-    i2c_dev_conf = dev_conf;
+    i2c_mpu9250_dev_conf = mpu9250_dev_conf;
+    i2c_ak8963_dev_conf = mpu9250_dev_conf;
+    i2c_ak8963_dev_conf->device_address = AK8963_IIC_ADDRESS;
     return ESP_OK;
 }
 
@@ -43,9 +47,14 @@ uint8_t mpu9250_interface_iic_init(void) {
         ESP_LOGE(MPU9250_INTERFACE_TAG, "i2c_new_master_bus error!");
         return 1;
     }
-    ret = i2c_master_bus_add_device(i2c_master_bus_hdl, i2c_dev_conf, &i2c_master_dev_hdl);
+    ret = i2c_master_bus_add_device(i2c_master_bus_hdl, i2c_mpu9250_dev_conf, &i2c_master_mpu9250_dev_hdl);
     if(ret != ESP_OK) {
-        ESP_LOGE(MPU9250_INTERFACE_TAG, "i2c_master_bus_add_device error!");
+        ESP_LOGE(MPU9250_INTERFACE_TAG, "i2c_master_bus_add_device [mpu9250] error!");
+        return 1;
+    }
+    ret = i2c_master_bus_add_device(i2c_master_bus_hdl, i2c_ak8963_dev_conf, &i2c_master_ak8963_dev_hdl);
+    if(ret != ESP_OK) {
+        ESP_LOGE(MPU9250_INTERFACE_TAG, "i2c_master_bus_add_device [ak8963] error!");
         return 1;
     }
 
@@ -63,12 +72,14 @@ uint8_t mpu9250_interface_iic_init(void) {
  */
 uint8_t mpu9250_interface_iic_deinit(void) {
     esp_err_t ret;
-    ret = i2c_master_bus_rm_device(i2c_master_dev_hdl);
+    ret = i2c_master_bus_rm_device(i2c_master_mpu9250_dev_hdl);
+    assert(ESP_OK == ret);
+    ret = i2c_master_bus_rm_device(i2c_master_ak8963_dev_hdl);
     assert(ESP_OK == ret);
     ret = i2c_del_master_bus(i2c_master_bus_hdl);
     assert(ESP_OK == ret);
     i2c_master_conf = NULL;
-    i2c_dev_conf = NULL;
+    i2c_mpu9250_dev_conf = NULL;
     if (ret != ESP_OK) {
         return 1;
     }
@@ -88,11 +99,12 @@ uint8_t mpu9250_interface_iic_deinit(void) {
  */
 uint8_t mpu9250_interface_iic_read(uint8_t addr, uint8_t reg, uint8_t *buf, uint16_t len) {
     esp_err_t ret;
-    uint8_t write_buf[1] = {reg};
-//    uint8_t write_buf[3] = {(addr << 1 | I2C_MASTER_WRITE), reg,(addr << 1 | I2C_MASTER_READ)};
-    // uint8_t write_buf[20] = {reg};
     ESP_LOGI(MPU9250_INTERFACE_TAG, "mpu9250_interface_iic_read() | addr: %x, reg: %x, buff: %s, len: %d", addr, reg,buf, len);
-    ret = i2c_master_transmit_receive(i2c_master_dev_hdl, write_buf, sizeof(write_buf), buf, len, I2C_READ_TIMEOUT_MS*5);
+    i2c_master_dev_handle_t i2c_dev_hdl = i2c_master_mpu9250_dev_hdl;
+    if(addr == AK8963_IIC_ADDRESS) {
+        i2c_dev_hdl = i2c_master_ak8963_dev_hdl;
+    }
+    ret = i2c_master_transmit_receive(i2c_dev_hdl, &reg, 1, buf, len, I2C_READ_TIMEOUT_MS);
     assert(ESP_OK == ret);
     if (ret != ESP_OK) {
         return 1;
@@ -118,7 +130,7 @@ uint8_t mpu9250_interface_iic_write(uint8_t addr, uint8_t reg, uint8_t *buf, uin
     for(int i=1;i<len+1;i++){
         write_buf[i] = buf[i-1];
     }
-    ret = i2c_master_transmit(i2c_master_dev_hdl, write_buf, sizeof(write_buf), I2C_WRITE_TIMEOUT_MS);
+    ret = i2c_master_transmit(i2c_master_mpu9250_dev_hdl, write_buf, sizeof(write_buf), I2C_WRITE_TIMEOUT_MS);
     assert(ESP_OK == ret);
     if (ret != ESP_OK) {
         return 1;

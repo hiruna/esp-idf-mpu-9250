@@ -56,10 +56,6 @@
 #define TEMPERATURE_MAX           85.0f                /**< chip max operating temperature */
 #define DRIVER_VERSION            1000                 /**< driver version */
 
-/**
- * @brief chip ak8963 iic address definition
- */
-#define AK8963_IIC_ADDRESS              0x0C        /**< ak8963 iic address */
 
 /**
  * @brief chip register definition
